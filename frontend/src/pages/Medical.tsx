@@ -1,8 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Activity, CheckCircle, Smartphone, MapPin, Search, Plus, Filter, ArrowLeft, Users } from 'lucide-react';
 
 export default function Medical() {
   const [view, setView] = useState<'table' | 'form'>('table');
+  const [patients, setPatients] = useState<any[]>([]);
+  
+  // Form State
+  const [nomPrenom, setNomPrenom] = useState('');
+  const [telephone, setTelephone] = useState('');
+  const [age, setAge] = useState('');
+  const [adresse, setAdresse] = useState('');
+  const [profession, setProfession] = useState('');
+
+  const fetchPatients = async () => {
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/patients/');
+      if (res.ok) {
+        const data = await res.json();
+        setPatients(data);
+      }
+    } catch (error) {
+      console.error("Erreur de chargement", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  const handleSavePatient = async () => {
+    try {
+      const parts = nomPrenom.trim().split(' ');
+      const nom = parts.length > 1 ? parts.pop() : nomPrenom;
+      const prenom = parts.length > 0 ? parts.join(' ') : 'Inconnu';
+      
+      let payload = {
+        nom: nom || 'Inconnu',
+        prenom: prenom,
+        telephone,
+        profession,
+        adresse
+      };
+
+      const res = await fetch('http://127.0.0.1:8000/api/patients/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        setNomPrenom('');
+        setTelephone('');
+        setAge('');
+        setAdresse('');
+        setProfession('');
+        fetchPatients();
+        setView('table');
+      }
+    } catch (error) {
+      console.error("Erreur de sauvegarde", error);
+    }
+  };
 
   if (view === 'table') {
     return (
@@ -38,60 +95,28 @@ export default function Medical() {
               </tr>
             </thead>
             <tbody>
-              <tr className="table-row">
-                <td style={tdStyle}>
-                  <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '1.05rem' }}>Karim Dubois</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>34 ans - Enseignant</div>
-                </td>
-                <td style={tdStyle}>
-                  <span style={{ fontWeight: 600, color: '#334155' }}>05 55 12 34 56</span>
-                </td>
-                <td style={tdStyle}>
-                  <span style={badgeGray}>12/04/2024</span>
-                </td>
-                <td style={tdStyle}>
-                  <span style={{ backgroundColor: '#fef3c7', color: '#b45309', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.85rem', fontWeight: 700 }}>Aujourd'hui</span>
-                </td>
-                <td style={tdStyle}>
-                   <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', boxShadow: 'none' }} onClick={() => setView('form')}>Ouvrir Dossier</button>
-                </td>
-              </tr>
-              <tr className="table-row">
-                <td style={tdStyle}>
-                  <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '1.05rem' }}>Sarah Martin</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>28 ans - Ingénieure</div>
-                </td>
-                <td style={tdStyle}>
-                  <span style={{ fontWeight: 600, color: '#334155' }}>06 66 98 76 54</span>
-                </td>
-                <td style={tdStyle}>
-                  <span style={badgeGray}>05/01/2023</span>
-                </td>
-                <td style={tdStyle}>
-                  <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>-</span>
-                </td>
-                <td style={tdStyle}>
-                   <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', boxShadow: 'none' }} onClick={() => setView('form')}>Ouvrir Dossier</button>
-                </td>
-              </tr>
-              <tr className="table-row">
-                <td style={tdStyle}>
-                  <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '1.05rem' }}>Amine B.</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>42 ans - Commerçant</div>
-                </td>
-                <td style={tdStyle}>
-                  <span style={{ fontWeight: 600, color: '#334155' }}>07 77 11 22 33</span>
-                </td>
-                <td style={tdStyle}>
-                  <span style={badgeGray}>18/11/2023</span>
-                </td>
-                <td style={tdStyle}>
-                  <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>-</span>
-                </td>
-                <td style={tdStyle}>
-                   <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', boxShadow: 'none' }} onClick={() => setView('form')}>Ouvrir Dossier</button>
-                </td>
-              </tr>
+              {patients.length > 0 ? patients.map(p => (
+                <tr className="table-row" key={p.id}>
+                  <td style={tdStyle}>
+                    <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '1.05rem' }}>{p.prenom} {p.nom}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{p.profession || 'Sans profession'}</div>
+                  </td>
+                  <td style={tdStyle}>
+                    <span style={{ fontWeight: 600, color: '#334155' }}>{p.telephone || '-'}</span>
+                  </td>
+                  <td style={tdStyle}>
+                    <span style={badgeGray}>{new Date(p.date_creation).toLocaleDateString('fr-FR')}</span>
+                  </td>
+                  <td style={tdStyle}>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>-</span>
+                  </td>
+                  <td style={tdStyle}>
+                     <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', boxShadow: 'none' }} onClick={() => setView('form')}>Ouvrir Dossier</button>
+                  </td>
+                </tr>
+              )) : (
+                <tr><td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Aucun patient trouvé.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -119,31 +144,31 @@ export default function Medical() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
               <label style={labelStyle}>Nom et Prénom</label>
-              <input type="text" className="premium-input" placeholder="Ex: Karim Dubois" />
+              <input type="text" className="premium-input" placeholder="Ex: Karim Dubois" value={nomPrenom} onChange={e => setNomPrenom(e.target.value)} />
             </div>
             
             <div style={{ display: 'flex', gap: '1.5rem' }}>
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}><Smartphone size={14} style={{ display: 'inline', marginRight: '4px' }} /> Téléphone</label>
-                <input type="tel" className="premium-input" placeholder="05..." />
+                <input type="tel" className="premium-input" placeholder="05..." value={telephone} onChange={e => setTelephone(e.target.value)} />
               </div>
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Âge</label>
-                <input type="number" className="premium-input" placeholder="Ex: 34" />
+                <input type="number" className="premium-input" placeholder="Ex: 34" value={age} onChange={e => setAge(e.target.value)} />
               </div>
             </div>
             
             <div>
               <label style={labelStyle}><MapPin size={14} style={{ display: 'inline', marginRight: '4px' }} /> Adresse (Optionnel)</label>
-              <input type="text" className="premium-input" placeholder="Adresse complète" />
+              <input type="text" className="premium-input" placeholder="Adresse complète" value={adresse} onChange={e => setAdresse(e.target.value)} />
             </div>
             
             <div>
               <label style={labelStyle}>Profession</label>
-              <input type="text" className="premium-input" placeholder="Ex: Enseignant" />
+              <input type="text" className="premium-input" placeholder="Ex: Enseignant" value={profession} onChange={e => setProfession(e.target.value)} />
             </div>
             
-            <button className="btn-primary" style={{ marginTop: '1.5rem', width: '100%' }}>
+            <button className="btn-primary" style={{ marginTop: '1.5rem', width: '100%' }} onClick={handleSavePatient}>
               <CheckCircle size={20} /> Sauvegarder le Patient
             </button>
           </div>

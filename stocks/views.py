@@ -3,16 +3,23 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
-from .models import Marque, Monture, Verre, Lentille, Accessoire
+from .models import Marque, Monture, Verre, Lentille, Accessoire, Categorie
 from .serializers import (
     MarqueSerializer, MontureSerializer, VerreSerializer,
-    LentilleSerializer, AccessoireSerializer
+    LentilleSerializer, AccessoireSerializer, CategorieSerializer
 )
 
 
 class MarqueViewSet(viewsets.ModelViewSet):
     queryset = Marque.objects.all()
     serializer_class = MarqueSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nom']
+
+
+class CategorieViewSet(viewsets.ModelViewSet):
+    queryset = Categorie.objects.all()
+    serializer_class = CategorieSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['nom']
 

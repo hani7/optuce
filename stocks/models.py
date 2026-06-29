@@ -3,6 +3,21 @@ from django.utils import timezone
 from django.db.models import Q
 
 
+# ─── Catégories ──────────────────────────────────────────────────────────────
+
+class Categorie(models.Model):
+    nom = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Catégorie"
+        verbose_name_plural = "Catégories"
+        ordering = ['nom']
+
+    def __str__(self):
+        return self.nom
+
+
 # ─── Montures ────────────────────────────────────────────────────────────────
 
 class Marque(models.Model):
@@ -39,6 +54,7 @@ class Monture(models.Model):
     couleur = models.CharField(max_length=50)
     taille = models.CharField(max_length=20, blank=True, verbose_name="Taille (ex: 52-18-140)")
     materiau = models.CharField(max_length=20, choices=MATERIAU_CHOICES, blank=True)
+    categorie = models.ForeignKey(Categorie, on_delete=models.SET_NULL, null=True, blank=True, related_name='montures')
     code_barres = models.CharField(max_length=50, unique=True, blank=True)
     reference = models.CharField(max_length=100, blank=True)
     prix_achat = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -98,6 +114,7 @@ class Verre(models.Model):
     type_verre = models.CharField(max_length=20, choices=TYPE_CHOICES, default='unifocal')
     indice = models.CharField(max_length=10, choices=INDICE_CHOICES, default='1.50')
     traitement = models.CharField(max_length=20, choices=TRAITEMENT_CHOICES, default='standard')
+    categorie = models.ForeignKey(Categorie, on_delete=models.SET_NULL, null=True, blank=True, related_name='verres')
     # Plages de correction disponibles
     sphere_min = models.DecimalField(max_digits=5, decimal_places=2, default=-10)
     sphere_max = models.DecimalField(max_digits=5, decimal_places=2, default=10)
@@ -138,6 +155,7 @@ class Lentille(models.Model):
     marque = models.CharField(max_length=100)
     reference = models.CharField(max_length=100, unique=True)
     type_port = models.CharField(max_length=20, choices=TYPE_CHOICES, default='mensuelle')
+    categorie = models.ForeignKey(Categorie, on_delete=models.SET_NULL, null=True, blank=True, related_name='lentilles')
     puissance = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     cylindre = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     axe = models.IntegerField(null=True, blank=True)

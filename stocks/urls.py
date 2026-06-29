@@ -1,8 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import MarqueViewSet, MontureViewSet, VerreViewSet, LentilleViewSet, AccessoireViewSet
+from .views import MarqueViewSet, MontureViewSet, VerreViewSet, LentilleViewSet, AccessoireViewSet, CategorieViewSet
 
 router = DefaultRouter()
+router.register(r'categories', CategorieViewSet, basename='categorie')
 router.register(r'marques', MarqueViewSet, basename='marque')
 router.register(r'montures', MontureViewSet, basename='monture')
 router.register(r'verres', VerreViewSet, basename='verre')

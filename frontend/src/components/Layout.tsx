@@ -10,7 +10,14 @@ import {
   Bell,
   Settings,
   Eye,
-  Search
+  Search,
+  Truck,
+  Glasses,
+  Circle,
+  Building,
+  DollarSign,
+  Tag,
+  Layers
 } from 'lucide-react';
 
 export default function Layout() {
@@ -75,30 +82,30 @@ export default function Layout() {
           </NavLink>
           <NavLink to="/caisse" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <ShoppingCart />
-            Vente & Caisse
+            Commande
           </NavLink>
           <NavLink to="/medical" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <FileText />
-            Patient
+            Clients
           </NavLink>
           <div className="nav-dropdown-container">
             <NavLink to="/stocks" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <Package />
-              Stocks & Inventaire
+              Stock
             </NavLink>
             <div className="nav-dropdown">
-              <NavLink to="/stocks" className="dropdown-item">👓 Montures</NavLink>
-              <NavLink to="/stocks" className="dropdown-item">🔍 Verres Matrices</NavLink>
-              <NavLink to="/stocks" className="dropdown-item">🧴 Lentilles & Produits</NavLink>
+              <NavLink to="/stocks/montures" className="dropdown-item"><Glasses size={16} color="#0f172a" /> Montures</NavLink>
+              <NavLink to="/stocks/verres" className="dropdown-item"><Circle size={16} color="#0f172a" /> Verres Matrices</NavLink>
+              <NavLink to="/stocks/lentilles" className="dropdown-item"><Package size={16} color="#0f172a" /> Lentilles & Produits</NavLink>
             </div>
           </div>
           <NavLink to="/atelier" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Wrench />
             Atelier
           </NavLink>
-          <NavLink to="/mutuelles" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <ShieldCheck />
-            Mutuelles
+          <NavLink to="/achats" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <Truck />
+            Achats
           </NavLink>
           <NavLink to="/crm" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Users />
@@ -108,6 +115,18 @@ export default function Layout() {
             <BarChart2 />
             Statistiques
           </NavLink>
+          <div className="nav-dropdown-container">
+            <NavLink to="/parametres" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <Settings />
+              Paramètres
+            </NavLink>
+            <div className="nav-dropdown">
+              <NavLink to="/parametres/fournisseurs" className="dropdown-item"><Building size={16} color="#0f172a" /> Fournisseurs</NavLink>
+              <NavLink to="/parametres/charges" className="dropdown-item"><DollarSign size={16} color="#0f172a" /> Charges</NavLink>
+              <NavLink to="/parametres/marques" className="dropdown-item"><Tag size={16} color="#0f172a" /> Marques</NavLink>
+              <NavLink to="/parametres/categories" className="dropdown-item"><Layers size={16} color="#0f172a" /> Catégories</NavLink>
+            </div>
+          </div>
         </nav>
       </div>
 
