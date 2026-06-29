@@ -79,12 +79,19 @@ export default function Layout() {
           </NavLink>
           <NavLink to="/medical" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <FileText />
-            Dossier Médical
+            Patient
           </NavLink>
-          <NavLink to="/stocks" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Package />
-            Stocks & Inventaire
-          </NavLink>
+          <div className="nav-dropdown-container">
+            <NavLink to="/stocks" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <Package />
+              Stocks & Inventaire
+            </NavLink>
+            <div className="nav-dropdown">
+              <NavLink to="/stocks" className="dropdown-item">👓 Montures</NavLink>
+              <NavLink to="/stocks" className="dropdown-item">🔍 Verres Matrices</NavLink>
+              <NavLink to="/stocks" className="dropdown-item">🧴 Lentilles & Produits</NavLink>
+            </div>
+          </div>
           <NavLink to="/atelier" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Wrench />
             Atelier

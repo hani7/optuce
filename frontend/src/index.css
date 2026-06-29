@@ -223,6 +223,61 @@ body {
   border-radius: 4px 4px 0 0;
 }
 
+/* Nav Dropdown on Hover */
+.nav-dropdown-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nav-dropdown {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem;
+  min-width: 220px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transform: translateY(10px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-dropdown-container:hover .nav-dropdown {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown-item:hover {
+  background: #f1f5f9;
+  color: #1eb6e7;
+  transform: translateX(4px);
+}
+
 /* Premium Card Styles */
 .premium-card {
   background-color: var(--card-bg);
@@ -241,8 +296,8 @@ body {
 /* Premium Inputs */
 .premium-input {
   width: 100%;
-  padding: 0.85rem 1rem;
-  border-radius: 10px;
+  padding: 0.85rem 1.25rem;
+  border-radius: 50px;
   border: 1px solid var(--border-color);
   font-size: 0.95rem;
   background-color: #f8fafc;
