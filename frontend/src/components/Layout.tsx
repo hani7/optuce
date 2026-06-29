@@ -40,13 +40,16 @@ export default function Layout() {
         </div>
 
         <div className="actions">
-          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', padding: '0.5rem 1rem', borderRadius: '20px', gap: '0.5rem', marginRight: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', padding: '0.4rem 0.8rem', borderRadius: '20px', gap: '0.5rem', marginRight: '1rem' }}>
             <Search size={16} color="#94a3b8" />
             <input type="text" placeholder="Recherche rapide..." style={{ background: 'transparent', border: 'none', color: 'white', outline: 'none', fontSize: '0.85rem', width: '150px' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.15)', padding: '0.2rem 0.4rem', borderRadius: '6px', fontSize: '0.7rem', color: '#cbd5e1', fontWeight: 'bold', letterSpacing: '0.5px', marginLeft: '0.5rem' }}>
+              ⌘K
+            </div>
           </div>
           
           <span style={{ fontSize: '0.85rem', opacity: 0.8, fontWeight: 500 }}>
-            {currentDate}
+            {currentDate} • {currentTime}
           </span>
           <button className="icon-button">
             <Bell size={20} />

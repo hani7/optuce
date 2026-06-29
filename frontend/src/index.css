@@ -256,12 +256,15 @@ body {
 }
 
 /* Premium Buttons */
+button {
+  border-radius: 50px !important;
+}
+
 .btn-primary {
   padding: 0.85rem 1.5rem;
-  background: var(--header-bg);
+  background: #1eb6e7;
   color: white;
   border: none;
-  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -274,15 +277,25 @@ body {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
-  background: #1e293b;
+  background: #18a4d4;
 }
 
 .btn-accent {
-  background: var(--accent-gradient);
+  background: #1eb6e7;
   color: white;
+  border: none;
+  padding: 0.85rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 .btn-accent:hover {
-  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 10px 15px -3px rgba(30, 182, 231, 0.4);
+  background: #18a4d4;
 }
 
 /* Main Content Area */
