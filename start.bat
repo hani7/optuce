@@ -34,7 +34,6 @@ call npm install
 start "Optuce Frontend" cmd /k "npm run dev"
 
 echo.
-echo Termine ! Vous pouvez acceder a l'application sur :
-echo http://localhost:5173/
+echo Termine ! (Backend API Only)
 echo.
 pause
