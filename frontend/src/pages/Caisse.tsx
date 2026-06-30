@@ -68,7 +68,7 @@ export default function Caisse() {
   const [editingVente, setEditingVente] = useState<any>(null);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/stocks/categories/')
+    fetch('https://api.optuce.baitul.tech/api/stocks/categories/')
       .then(res => res.json())
       .then(data => {
         const fetchedCats = Array.isArray(data) ? data : (data.results || []);
@@ -100,7 +100,7 @@ export default function Caisse() {
   useEffect(() => {
     if (viewMode === 'list') {
       setIsLoadingVentes(true);
-      fetch('http://127.0.0.1:8000/api/ventes/')
+      fetch('https://api.optuce.baitul.tech/api/ventes/')
         .then(res => res.json())
         .then(data => setVentes(Array.isArray(data) ? data : data.results || []))
         .catch(console.error)
@@ -118,7 +118,7 @@ export default function Caisse() {
 
   const fetchPatients = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/patients/?search=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(`https://api.optuce.baitul.tech/api/patients/?search=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
       let results = Array.isArray(data) ? data : (data.results || []);
       setPatients(results);
@@ -136,7 +136,7 @@ export default function Caisse() {
       } else {
         // Fetch Stocks
         const endpoint = currentStep === 1 ? 'montures' : 'verres';
-        let url = `http://127.0.0.1:8000/api/stocks/${endpoint}/?`;
+        let url = `https://api.optuce.baitul.tech/api/stocks/${endpoint}/?`;
         if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`;
         if (activeCategoryId) url += `categorie=${activeCategoryId}&`;
 
@@ -196,7 +196,7 @@ export default function Caisse() {
     }
     setIsSubmittingClient(true);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/patients/', {
+      const res = await fetch('https://api.optuce.baitul.tech/api/patients/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -294,7 +294,7 @@ export default function Caisse() {
         ventePayload.patient = selectedPatient.id;
       }
 
-      const venteRes = await fetch('http://127.0.0.1:8000/api/ventes/', {
+      const venteRes = await fetch('https://api.optuce.baitul.tech/api/ventes/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ventePayload)
@@ -312,7 +312,7 @@ export default function Caisse() {
       const venteData = await venteRes.json();
 
       if (paymentMethod && netAPayer > 0) {
-        const encRes = await fetch('http://127.0.0.1:8000/api/ventes/encaissements/', {
+        const encRes = await fetch('https://api.optuce.baitul.tech/api/ventes/encaissements/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -598,10 +598,10 @@ export default function Caisse() {
                     onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
                     <div style={{ position: 'relative', height: '140px', background: '#f8fafc', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', overflow: 'hidden' }}>
-                      {(item as any).photo && !(item as any).photo.includes('unsplash') ? (
+                      {(item as any).photo && !(item as any).photo?.includes('unsplash') ? (
                         <img src={(item as any).photo} alt={item.designation} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                        currentStep === 1 ? <img src="/default-monture.png" alt="Monture par défaut" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Eye size={40} />
+                        currentStep === 1 ? <img src="/default-monture.svg" alt="Monture par défaut" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Eye size={40} />
                       )}
                       {item.marque && (
                         <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backdropFilter: 'blur(4px)' }}>

@@ -20,7 +20,7 @@ export default function EditCommande() {
   const fetchCommande = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/ventes/${id}/`);
+      const res = await fetch(`https://api.optuce.baitul.tech/api/ventes/${id}/`);
       if (res.ok) {
         const data = await res.json();
         setCommande(data);
@@ -41,7 +41,7 @@ export default function EditCommande() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/ventes/${id}/`, {
+      const res = await fetch(`https://api.optuce.baitul.tech/api/ventes/${id}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'

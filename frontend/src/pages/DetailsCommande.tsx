@@ -9,7 +9,7 @@ export default function DetailsCommande() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/ventes/${id}/`)
+    fetch(`https://api.optuce.baitul.tech/api/ventes/${id}/`)
       .then(res => res.json())
       .then(data => setVente(data))
       .catch(console.error)

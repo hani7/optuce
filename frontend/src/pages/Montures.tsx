@@ -29,7 +29,7 @@ export default function Montures() {
   const fetchMontures = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/stocks/montures/');
+      const res = await fetch('https://api.optuce.baitul.tech/api/stocks/montures/');
       const data = await res.json();
       setMontures(Array.isArray(data) ? data : (data.results || []));
     } catch (err) {
@@ -66,13 +66,13 @@ export default function Montures() {
 
     try {
       if (editingId) {
-        await fetch(`http://127.0.0.1:8000/api/stocks/montures/${editingId}/`, {
+        await fetch(`https://api.optuce.baitul.tech/api/stocks/montures/${editingId}/`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       } else {
-        await fetch('http://127.0.0.1:8000/api/stocks/montures/', {
+        await fetch('https://api.optuce.baitul.tech/api/stocks/montures/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -197,10 +197,10 @@ export default function Montures() {
                 <tr key={i} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s', cursor: 'pointer' }} onMouseOver={e => e.currentTarget.style.background = '#f8fafc'} onMouseOut={e => e.currentTarget.style.background = 'white'}>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ width: '40px', height: '40px', background: '#e2e8f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                      {getImageUrl(item.image) ? (
-                        <img src={getImageUrl(item.image)} alt={item.modele} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      {getImageUrl(item.image) && !getImageUrl(item.image)?.includes('unsplash') ? (
+                        <img src={getImageUrl(item.image) as string} alt={item.modele} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                        <Glasses size={20} color="#94a3b8" />
+                        <img src="/default-monture.svg" alt="Monture par défaut" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       )}
                     </div>
                   </td>
@@ -236,7 +236,7 @@ export default function Montures() {
                       e.stopPropagation(); 
                       if (window.confirm('Êtes-vous sûr de vouloir supprimer cette monture ?')) {
                         try {
-                          await fetch(`http://127.0.0.1:8000/api/stocks/montures/${item.id}/`, { method: 'DELETE' });
+                          await fetch(`https://api.optuce.baitul.tech/api/stocks/montures/${item.id}/`, { method: 'DELETE' });
                           fetchMontures();
                         } catch(err) {
                           alert('Erreur lors de la suppression');
@@ -410,10 +410,10 @@ export default function Montures() {
 
             <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem' }}>
               <div style={{ flex: '0 0 200px', height: '200px', background: '#f8fafc', borderRadius: '12px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {getImageUrl(selectedMonture.image) ? (
-                  <img src={getImageUrl(selectedMonture.image)} alt={selectedMonture.modele} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {getImageUrl(selectedMonture.image) && !getImageUrl(selectedMonture.image)?.includes('unsplash') ? (
+                  <img src={getImageUrl(selectedMonture.image) as string} alt={selectedMonture.modele} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <Glasses size={48} color="#94a3b8" />
+                  <img src="/default-monture.svg" alt="Monture par défaut" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>

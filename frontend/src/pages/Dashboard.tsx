@@ -19,9 +19,9 @@ export default function Dashboard() {
     }
 
     Promise.all([
-      fetch(`http://127.0.0.1:8000/api/statistiques/ca/${params}`).then(res => res.json()),
-      fetch(`http://127.0.0.1:8000/api/statistiques/marges/${params}`).then(res => res.json()),
-      fetch(`http://127.0.0.1:8000/api/statistiques/top-ventes/${params}`).then(res => res.json())
+      fetch(`https://api.optuce.baitul.tech/api/statistiques/ca/${params}`).then(res => res.json()),
+      fetch(`https://api.optuce.baitul.tech/api/statistiques/marges/${params}`).then(res => res.json()),
+      fetch(`https://api.optuce.baitul.tech/api/statistiques/top-ventes/${params}`).then(res => res.json())
     ])
     .then(([caData, margesData, topData]) => {
       setStatsCA(caData);
