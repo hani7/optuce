@@ -19,11 +19,15 @@ import {
   DollarSign,
   Tag,
   Layers,
-  LogOut
+  LogOut,
+  Menu,
+  X,
+  ChevronDown
 } from 'lucide-react';
 
 export default function Layout() {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,6 +56,11 @@ export default function Layout() {
       <div className="top-header-sticky-container">
       {/* Red Header */}
       <header className="top-header">
+        {/* Hamburger (mobile only) */}
+        <button className="hamburger-btn" onClick={() => setDrawerOpen(true)}>
+          <Menu size={24} />
+        </button>
+
         <div className="logo">
           <Eye size={28} />
           <span>Optuce</span>
@@ -62,16 +71,8 @@ export default function Layout() {
         </div>
 
         <div className="actions">
-          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', padding: '0.4rem 0.8rem', borderRadius: '20px', gap: '0.5rem', marginRight: '1rem' }}>
-            <Search size={16} color="#94a3b8" />
-            <input type="text" placeholder="Recherche rapide..." style={{ background: 'transparent', border: 'none', color: 'white', outline: 'none', fontSize: '0.85rem', width: '150px' }} />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.15)', padding: '0.2rem 0.4rem', borderRadius: '6px', fontSize: '0.7rem', color: '#cbd5e1', fontWeight: 'bold', letterSpacing: '0.5px', marginLeft: '0.5rem' }}>
-              ÔîÿK
-            </div>
-          </div>
-          
           <span style={{ fontSize: '0.85rem', opacity: 0.8, fontWeight: 500 }}>
-            {currentDate} ÔÇó {currentTime}
+            {currentDate} • {currentTime}
           </span>
           <div style={{ position: 'relative' }} ref={notifRef}>
             <button className="icon-button" onClick={() => setShowNotifications(!showNotifications)}>
@@ -87,12 +88,12 @@ export default function Layout() {
                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                   <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} className="hover-item">
                     <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>Stock faible : Monture Ray-Ban</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Il ne reste que 2 unit├®s en stock.</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Il ne reste que 2 unités en stock.</div>
                     <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.5rem' }}>Il y a 10 min</div>
                   </div>
                   <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} className="hover-item">
                     <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>Nouvelle commande atelier</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>La commande CMD-2026-045 est pr├¬te.</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>La commande CMD-2026-045 est prête.</div>
                     <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.5rem' }}>Il y a 1 heure</div>
                   </div>
                   <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} className="hover-item">
@@ -137,10 +138,10 @@ export default function Layout() {
             Clients
           </NavLink>
           <div className="nav-dropdown-container">
-            <NavLink to="#" className="nav-item">
+            <div className="nav-item" style={{ cursor: 'pointer' }}>
               <Package />
               Stock
-            </NavLink>
+            </div>
             <div className="nav-dropdown">
               <NavLink to="/stocks/montures" className="dropdown-item"><Glasses size={16} color="#0f172a" /> Montures</NavLink>
               <NavLink to="/stocks/verres" className="dropdown-item"><Circle size={16} color="#0f172a" /> Verres Matrices</NavLink>
@@ -164,10 +165,10 @@ export default function Layout() {
             Statistiques
           </NavLink>
           <div className="nav-dropdown-container">
-            <NavLink to="#" className="nav-item">
+            <div className="nav-item" style={{ cursor: 'pointer' }}>
               <Settings />
               Paramètres
-            </NavLink>
+            </div>
             <div className="nav-dropdown">
               <NavLink to="/parametres/fournisseurs" className="dropdown-item"><Building size={16} color="#0f172a" /> Fournisseurs</NavLink>
               <NavLink to="/parametres/charges" className="dropdown-item"><DollarSign size={16} color="#0f172a" /> Charges</NavLink>
@@ -178,6 +179,69 @@ export default function Layout() {
         </nav>
       </div>
       </div>{/* End sticky container */}
+
+      {/* ─── Mobile Overlay ─── */}
+      <div className={`mobile-overlay${drawerOpen ? ' open' : ''}`} onClick={() => setDrawerOpen(false)} />
+
+      {/* ─── Mobile Drawer ─── */}
+      <div className={`mobile-drawer${drawerOpen ? ' open' : ''}`}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="mobile-drawer-logo">
+            <Eye size={24} /> Optuce
+          </div>
+          <button onClick={() => setDrawerOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px !important', display: 'flex' }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <NavLink to="/" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} end onClick={() => setDrawerOpen(false)}>
+            <BarChart2 size={20} /> Tableau de Bord
+          </NavLink>
+          <NavLink to="/caisse" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>
+            <ShoppingCart size={20} /> Commande
+          </NavLink>
+          <NavLink to="/medical" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>
+            <FileText size={20} /> Clients
+          </NavLink>
+          
+          <div style={{ marginTop: '0.5rem' }}>
+            <div className="mobile-nav-item" style={{ opacity: 0.7 }}>
+              <Package size={20} /> Stock
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.25rem' }}>
+              <NavLink to="/stocks/montures" className={({ isActive }) => `mobile-nav-sub ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>Montures</NavLink>
+              <NavLink to="/stocks/verres" className={({ isActive }) => `mobile-nav-sub ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>Verres</NavLink>
+              <NavLink to="/stocks/lentilles" className={({ isActive }) => `mobile-nav-sub ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>Lentilles & Produits</NavLink>
+            </div>
+          </div>
+
+          <NavLink to="/atelier" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)} style={{ marginTop: '0.5rem' }}>
+            <Wrench size={20} /> Atelier
+          </NavLink>
+          <NavLink to="/achats" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>
+            <Truck size={20} /> Achats
+          </NavLink>
+          <NavLink to="/crm" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>
+            <Users size={20} /> Fidélisation & CRM
+          </NavLink>
+          <NavLink to="/stats" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>
+            <BarChart2 size={20} /> Statistiques
+          </NavLink>
+
+          <div style={{ marginTop: '0.5rem' }}>
+            <div className="mobile-nav-item" style={{ opacity: 0.7 }}>
+              <Settings size={20} /> Paramètres
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.25rem' }}>
+              <NavLink to="/parametres/fournisseurs" className={({ isActive }) => `mobile-nav-sub ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>Fournisseurs</NavLink>
+              <NavLink to="/parametres/charges" className={({ isActive }) => `mobile-nav-sub ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>Charges</NavLink>
+              <NavLink to="/parametres/marques" className={({ isActive }) => `mobile-nav-sub ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>Marques</NavLink>
+              <NavLink to="/parametres/categories" className={({ isActive }) => `mobile-nav-sub ${isActive ? 'active' : ''}`} onClick={() => setDrawerOpen(false)}>Catégories</NavLink>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className="main-content">
