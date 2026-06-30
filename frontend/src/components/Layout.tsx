@@ -114,7 +114,7 @@ export default function Layout() {
             <div className="user-avatar">
               A
             </div>
-            <button className="icon-button" title="D├®connexion" onClick={() => { localStorage.removeItem('optuce_auth'); window.location.href = '/'; }}>
+            <button className="icon-button" title="Déconnexion" onClick={() => { localStorage.removeItem('optuce_auth'); window.location.href = '/'; }}>
               <LogOut size={20} color="#ef4444" />
             </button>
           </div>
@@ -157,7 +157,7 @@ export default function Layout() {
           </NavLink>
           <NavLink to="/crm" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Users />
-            Fid├®lisation & CRM
+            Fidélisation & CRM
           </NavLink>
           <NavLink to="/stats" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <BarChart2 />
@@ -166,13 +166,13 @@ export default function Layout() {
           <div className="nav-dropdown-container">
             <NavLink to="#" className="nav-item">
               <Settings />
-              Param├¿tres
+              Paramètres
             </NavLink>
             <div className="nav-dropdown">
               <NavLink to="/parametres/fournisseurs" className="dropdown-item"><Building size={16} color="#0f172a" /> Fournisseurs</NavLink>
               <NavLink to="/parametres/charges" className="dropdown-item"><DollarSign size={16} color="#0f172a" /> Charges</NavLink>
               <NavLink to="/parametres/marques" className="dropdown-item"><Tag size={16} color="#0f172a" /> Marques</NavLink>
-              <NavLink to="/parametres/categories" className="dropdown-item"><Layers size={16} color="#0f172a" /> Cat├®gories</NavLink>
+              <NavLink to="/parametres/categories" className="dropdown-item"><Layers size={16} color="#0f172a" /> Catégories</NavLink>
             </div>
           </div>
         </nav>
