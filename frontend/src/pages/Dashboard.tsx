@@ -1,94 +1,236 @@
-import React from 'react';
-import { BarChart2, TrendingUp, DollarSign, Package } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BarChart2, TrendingUp, DollarSign, Package, Calendar, Filter, Loader2, AlertCircle, Receipt } from 'lucide-react';
 
 export default function Dashboard() {
+  const [filterType, setFilterType] = useState('mois');
+  const [dateDebut, setDateDebut] = useState('');
+  const [dateFin, setDateFin] = useState('');
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [statsCA, setStatsCA] = useState<any>(null);
+  const [statsMarges, setStatsMarges] = useState<any>(null);
+  const [statsTop, setStatsTop] = useState<any>(null);
+
+  const fetchData = () => {
+    setIsLoading(true);
+    let params = `?periode=${filterType}`;
+    if (filterType === 'periode' && dateDebut && dateFin) {
+      params = `?debut=${dateDebut}&fin=${dateFin}`;
+    }
+
+    Promise.all([
+      fetch(`http://127.0.0.1:8000/api/statistiques/ca/${params}`).then(res => res.json()),
+      fetch(`http://127.0.0.1:8000/api/statistiques/marges/${params}`).then(res => res.json()),
+      fetch(`http://127.0.0.1:8000/api/statistiques/top-ventes/${params}`).then(res => res.json())
+    ])
+    .then(([caData, margesData, topData]) => {
+      setStatsCA(caData);
+      setStatsMarges(margesData);
+      setStatsTop(topData);
+    })
+    .catch(console.error)
+    .finally(() => setIsLoading(false));
+  };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterType]);
+
+  const formatMoney = (val: number) => {
+    return (val || 0).toLocaleString('fr-FR') + ' DZD';
+  };
+
+  if (isLoading || !statsCA) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+        <Loader2 size={48} color="var(--accent)" className="spin" />
+      </div>
+    );
+  }
+
+  // Calcul pour le graphique
+  const journalier = statsCA.ca_journalier || [];
+  // Ne garder que les 14 derniers jours pour l'affichage barres pour que ça ne soit pas trop compressé
+  const recentDays = journalier.slice(-14);
+  const maxCa = Math.max(...recentDays.map((d: any) => parseFloat(d.ca_facture)), 1); // Eviter div par 0
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
       
+      {/* Date Filters */}
+      <div className="premium-card" style={{ padding: '1.25rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a', fontWeight: 600 }}>
+            <Filter size={20} color="var(--accent)" /> Filtrer par :
+          </div>
+          <select 
+            className="premium-input" 
+            style={{ width: 'auto', padding: '0.5rem 2rem 0.5rem 1rem' }}
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+          >
+            <option value="mois">Ce Mois</option>
+            <option value="annee">Cette Année</option>
+            <option value="periode">Période personnalisée...</option>
+          </select>
+        </div>
+
+        {filterType === 'periode' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Du</span>
+              <input type="date" className="premium-input" style={{ padding: '0.5rem 1rem' }} value={dateDebut} onChange={e => setDateDebut(e.target.value)} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Au</span>
+              <input type="date" className="premium-input" style={{ padding: '0.5rem 1rem' }} value={dateFin} onChange={e => setDateFin(e.target.value)} />
+            </div>
+          </div>
+        )}
+
+        <button onClick={fetchData} className="btn-primary" style={{ padding: '0.5rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Calendar size={18} /> Actualiser
+        </button>
+      </div>
+      
       {/* Top Widgets */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
-        <Widget title="Chiffre d'Affaires du Jour" value="45,000 DZD" icon={<DollarSign color="#10b981" size={32} />} bgColor="#ecfdf5" />
-        <Widget title="CA Mensuel" value="1,250,000 DZD" icon={<TrendingUp color="#3b82f6" size={32} />} bgColor="#eff6ff" />
-        <Widget title="Marge Nette" value="35%" icon={<BarChart2 color="#8b5cf6" size={32} />} bgColor="#f5f3ff" />
-        <Widget title="Ventes (Articles)" value="28" icon={<Package color="#f59e0b" size={32} />} bgColor="#fffbeb" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+        <Widget title="Chiffre d'Affaires du Jour" value={formatMoney(statsCA.kpis.ca_aujourd_hui)} icon={<DollarSign color="#10b981" size={32} />} bgColor="#ecfdf5" />
+        <Widget title={filterType === 'annee' ? "CA Annuel" : "CA Mensuel"} value={formatMoney(filterType === 'annee' ? statsCA.kpis.ca_annee : statsCA.kpis.ca_mois)} icon={<TrendingUp color="#3b82f6" size={32} />} bgColor="#eff6ff" />
+        <Widget title="Marge Nette Globale" value={`${statsMarges.taux_marge_global}%`} icon={<BarChart2 color="#8b5cf6" size={32} />} bgColor="#f5f3ff" />
+        <Widget title="Ventes Finalisées (Mois)" value={statsCA.kpis.nb_ventes_mois.toString()} icon={<Package color="#f59e0b" size={32} />} bgColor="#fffbeb" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+        {/* Evolution Chart */}
         <div className="premium-card" style={{ minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
-           <h3 style={{ marginBottom: '2.5rem', fontSize: '1.25rem' }}>Évolution du Chiffre d'Affaires (Dernier Mois)</h3>
+           <h3 style={{ marginBottom: '2.5rem', fontSize: '1.25rem' }}>Évolution du Chiffre d'Affaires (14 derniers jours facturés)</h3>
            
-           <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '1.5rem', padding: '0 1rem' }}>
-             {/* Beautiful bar chart mockup */}
-             <div style={{ flex: 1, backgroundColor: '#e2e8f0', height: '40%', borderRadius: '8px 8px 0 0', position: 'relative', transition: 'height 1s ease-out' }} className="bar-hover">
-               <span style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.8rem', fontWeight: 'bold', color: '#64748b' }}>400k</span>
-             </div>
-             <div style={{ flex: 1, backgroundColor: '#cbd5e1', height: '60%', borderRadius: '8px 8px 0 0', position: 'relative' }}>
-               <span style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.8rem', fontWeight: 'bold', color: '#64748b' }}>600k</span>
-             </div>
-             <div style={{ flex: 1, backgroundColor: '#94a3b8', height: '50%', borderRadius: '8px 8px 0 0', position: 'relative' }}>
-               <span style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.8rem', fontWeight: 'bold', color: '#64748b' }}>500k</span>
-             </div>
-             <div style={{ flex: 1, background: 'var(--accent-gradient)', height: '90%', borderRadius: '8px 8px 0 0', position: 'relative', boxShadow: '0 0 15px rgba(59,130,246,0.5)' }}>
-               <span style={{ position: 'absolute', top: '-28px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--accent)' }}>900k</span>
-             </div>
+           <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: '0.5rem', padding: '0 1rem', overflowX: 'hidden' }}>
+             {recentDays.map((d: any, idx: number) => {
+               const heightPct = Math.max((parseFloat(d.ca_facture) / maxCa) * 100, 5);
+               const isMax = parseFloat(d.ca_facture) === maxCa;
+               return (
+                 <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', height: '100%', justifyContent: 'flex-end', group: 'true' }}>
+                   <span style={{ fontSize: '0.7rem', fontWeight: 700, color: isMax ? 'var(--accent)' : '#94a3b8', transform: 'rotate(-45deg)', transformOrigin: 'left bottom', marginBottom: '10px' }}>
+                     {parseFloat(d.ca_facture).toLocaleString('fr-FR')}
+                   </span>
+                   <div 
+                    title={`${d.jour} : ${d.ca_facture} DZD`}
+                    style={{ 
+                      width: '100%', 
+                      backgroundColor: isMax ? 'var(--accent)' : '#cbd5e1', 
+                      height: `${heightPct}%`, 
+                      borderRadius: '4px 4px 0 0', 
+                      transition: 'height 0.5s ease-out, background 0.3s',
+                      boxShadow: isMax ? '0 0 15px rgba(59,130,246,0.3)' : 'none',
+                      cursor: 'pointer'
+                    }} 
+                    onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'var(--accent-hover)' }}
+                    onMouseOut={(e) => { e.currentTarget.style.backgroundColor = isMax ? 'var(--accent)' : '#cbd5e1' }}
+                   />
+                 </div>
+               )
+             })}
            </div>
            
-           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1.5rem 1rem 0', color: 'var(--text-secondary)', fontSize: '0.85rem', borderTop: '1px solid #f1f5f9', marginTop: '1rem' }}>
-             <span style={{ flex: 1, textAlign: 'center' }}>Semaine 1</span>
-             <span style={{ flex: 1, textAlign: 'center' }}>Semaine 2</span>
-             <span style={{ flex: 1, textAlign: 'center' }}>Semaine 3</span>
-             <span style={{ flex: 1, textAlign: 'center', fontWeight: 'bold', color: 'var(--text-primary)' }}>Semaine 4</span>
+           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1.5rem 1rem 0', color: 'var(--text-secondary)', fontSize: '0.8rem', borderTop: '1px solid #f1f5f9', marginTop: '1rem' }}>
+             <span>{recentDays.length > 0 ? new Date(recentDays[0].jour).toLocaleDateString('fr-FR') : ''}</span>
+             <span>Aujourd'hui</span>
            </div>
         </div>
         
+        {/* Top Marques */}
         <div className="premium-card">
-           <h3 style={{ marginBottom: '2.5rem', fontSize: '1.25rem' }}>Top Ventes Marques</h3>
-           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-             <div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', fontSize: '1.05rem' }}>
-                 <span style={{ fontWeight: 600 }}>Ray-Ban</span> 
-                 <strong style={{ color: 'var(--accent)' }}>35%</strong>
-               </div>
-               <div style={{ width: '100%', height: '10px', backgroundColor: '#f1f5f9', borderRadius: '5px', overflow: 'hidden' }}>
-                 <div style={{ width: '35%', height: '100%', background: 'var(--accent-gradient)', borderRadius: '5px' }}></div>
-               </div>
-             </div>
-             
-             <div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', fontSize: '1.05rem' }}>
-                 <span style={{ fontWeight: 600 }}>Guess</span> 
-                 <strong style={{ color: '#10b981' }}>20%</strong>
-               </div>
-               <div style={{ width: '100%', height: '10px', backgroundColor: '#f1f5f9', borderRadius: '5px', overflow: 'hidden' }}>
-                 <div style={{ width: '20%', height: '100%', background: 'linear-gradient(to right, #10b981, #059669)', borderRadius: '5px' }}></div>
-               </div>
-             </div>
-             
-             <div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', fontSize: '1.05rem' }}>
-                 <span style={{ fontWeight: 600 }}>Dior</span> 
-                 <strong style={{ color: '#f59e0b' }}>15%</strong>
-               </div>
-               <div style={{ width: '100%', height: '10px', backgroundColor: '#f1f5f9', borderRadius: '5px', overflow: 'hidden' }}>
-                 <div style={{ width: '15%', height: '100%', background: 'linear-gradient(to right, #f59e0b, #d97706)', borderRadius: '5px' }}></div>
-               </div>
-             </div>
+           <h3 style={{ marginBottom: '2.5rem', fontSize: '1.25rem' }}>Top Ventes Montures</h3>
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+             {statsTop.top_marques_montures?.length === 0 && (
+               <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>Aucune donnée</div>
+             )}
+             {statsTop.top_marques_montures?.map((marque: any, idx: number) => {
+               const maxCaMarque = parseFloat(statsTop.top_marques_montures[0].ca_total);
+               const pct = (parseFloat(marque.ca_total) / maxCaMarque) * 100;
+               return (
+                 <div key={idx}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.95rem' }}>
+                     <span style={{ fontWeight: 600 }}>{marque.marque_nom}</span> 
+                     <strong style={{ color: idx === 0 ? 'var(--accent)' : 'var(--text-secondary)' }}>
+                       {parseFloat(marque.ca_total).toLocaleString('fr-FR')} DZD
+                     </strong>
+                   </div>
+                   <div style={{ width: '100%', height: '8px', backgroundColor: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                     <div style={{ width: `${pct}%`, height: '100%', background: idx === 0 ? 'var(--accent-gradient)' : '#94a3b8', borderRadius: '4px' }}></div>
+                   </div>
+                 </div>
+               )
+             })}
            </div>
         </div>
       </div>
+
+      {/* Third row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+        <div className="premium-card">
+          <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertCircle color="#ef4444" size={20} /> Santé Financière
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid #f1f5f9' }}>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Total Créances Clients</span>
+              <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ef4444' }}>{formatMoney(statsCA.kpis.total_creances_clients)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: '1px solid #f1f5f9' }}>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Panier Moyen (Mois)</span>
+              <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#10b981' }}>{formatMoney(statsCA.kpis.panier_moyen_mois)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Marge Nette Absolue</span>
+              <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#8b5cf6' }}>{formatMoney(statsMarges.marge_nette)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="premium-card" style={{ gridColumn: 'span 2' }}>
+           <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+             <Receipt color="var(--accent)" size={20} /> Types de Verres les plus vendus
+           </h3>
+           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #f1f5f9', color: 'var(--text-secondary)' }}>
+                <th style={{ padding: '0.75rem', fontWeight: 600 }}>Indice</th>
+                <th style={{ padding: '0.75rem', fontWeight: 600 }}>Traitement</th>
+                <th style={{ padding: '0.75rem', fontWeight: 600, textAlign: 'right' }}>Quantité Vendue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {statsTop.top_verres?.length === 0 && (
+                <tr><td colSpan={3} style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8' }}>Aucune donnée</td></tr>
+              )}
+              {statsTop.top_verres?.map((tv: any, idx: number) => (
+                <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  <td style={{ padding: '1rem 0.75rem', fontWeight: 600 }}>{tv.indice || '-'}</td>
+                  <td style={{ padding: '1rem 0.75rem', color: 'var(--text-secondary)' }}>{tv.traitement || 'Standard'}</td>
+                  <td style={{ padding: '1rem 0.75rem', textAlign: 'right', fontWeight: 800, color: 'var(--accent)' }}>{tv.nb_vendus}</td>
+                </tr>
+              ))}
+            </tbody>
+           </table>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
 
 function Widget({ title, value, icon, bgColor }: { title: string, value: string, icon: React.ReactNode, bgColor: string }) {
   return (
-    <div className="premium-card" style={{ padding: '1.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <div>
-        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '0.5px' }}>{title}</div>
-        <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>{value}</div>
-      </div>
-      <div style={{ backgroundColor: bgColor, padding: '1.25rem', borderRadius: '16px' }}>
+    <div className="premium-card hover-item" style={{ borderLeft: `4px solid ${bgColor !== '#fffbeb' ? bgColor.replace('f', 'b').replace('e','a') : '#f59e0b'}`, display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
+      <div style={{ background: bgColor, padding: '1rem', borderRadius: '12px' }}>
         {icon}
+      </div>
+      <div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{title}</div>
+        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{value}</div>
       </div>
     </div>
   )

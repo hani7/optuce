@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    fs: {
+      allow: ['..', 'C:/Users/pc/.gemini/antigravity/brain']
+    },
     proxy: {
       '/api': 'http://localhost:8000'
     }

@@ -1,10 +1,53 @@
-import React, { useState } from 'react';
-import { ShoppingCart, Plus, Filter, Search, FileText, TrendingUp, TrendingDown, Clock, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ShoppingCart, Plus, Filter, Search, FileText, TrendingUp, TrendingDown, Clock, X, Loader2, Check } from 'lucide-react';
 
 export default function Achats() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [newAchat, setNewAchat] = useState({ fournisseur: '', montant: '', nbArticles: '' });
+  const [newAchat, setNewAchat] = useState({ fournisseur: '', prixAchat: '', quantite: '1' });
+  
+  const [fournisseurs, setFournisseurs] = useState<any[]>([]);
+  const [typeArticle, setTypeArticle] = useState('monture');
+  const [productSearch, setProductSearch] = useState('');
+  const [products, setProducts] = useState<any[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showProductDropdown, setShowProductDropdown] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/parametres/fournisseurs/')
+      .then(res => res.json())
+      .then(data => setFournisseurs(Array.isArray(data) ? data : (data.results || [])))
+      .catch(console.error);
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowProductDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!productSearch.trim()) {
+      setProducts([]);
+      return;
+    }
+    const delay = setTimeout(() => {
+      setIsSearching(true);
+      fetch(`http://127.0.0.1:8000/api/stocks/${typeArticle}s/?search=${encodeURIComponent(productSearch)}`)
+        .then(res => res.json())
+        .then(data => {
+          setProducts(Array.isArray(data) ? data : (data.results || []));
+          setShowProductDropdown(true);
+        })
+        .catch(console.error)
+        .finally(() => setIsSearching(false));
+    }, 300);
+    return () => clearTimeout(delay);
+  }, [productSearch, typeArticle]);
 
   const [achats, setAchats] = useState([
     { id: 'ACH-2026-001', date: '28 Juin 2026', fournisseur: 'Essilor', montant: '145,000 DZD', statut: 'Reçu', nbArticles: 45 },
@@ -14,18 +57,24 @@ export default function Achats() {
   ]);
 
   const handleAdd = () => {
-    if (!newAchat.fournisseur || !newAchat.montant) return;
+    if (!newAchat.fournisseur || !selectedProduct || !newAchat.prixAchat) return;
+    const prix = parseFloat(newAchat.prixAchat);
+    const qte = parseInt(newAchat.quantite || '1', 10);
+    const total = prix * qte;
+    
     const newItem = {
       id: `ACH-2026-00${achats.length + 1}`,
       date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
       fournisseur: newAchat.fournisseur,
-      montant: `${newAchat.montant} DZD`,
+      montant: `${total.toLocaleString('fr-FR')} DZD`,
       statut: 'En attente',
-      nbArticles: parseInt(newAchat.nbArticles || '1', 10)
+      nbArticles: qte
     };
     setAchats([newItem, ...achats]);
     setShowModal(false);
-    setNewAchat({ fournisseur: '', montant: '', nbArticles: '' });
+    setNewAchat({ fournisseur: '', prixAchat: '', quantite: '1' });
+    setSelectedProduct(null);
+    setProductSearch('');
   };
 
   return (
@@ -148,19 +197,81 @@ export default function Achats() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569' }}>Fournisseur</label>
-                <input type="text" className="premium-input" placeholder="Ex: Essilor" value={newAchat.fournisseur} onChange={e => setNewAchat({...newAchat, fournisseur: e.target.value})} />
+                <select className="premium-input" value={newAchat.fournisseur} onChange={e => setNewAchat({...newAchat, fournisseur: e.target.value})}>
+                  <option value="">Sélectionner un fournisseur</option>
+                  {fournisseurs.map((f: any) => (
+                    <option key={f.id} value={f.nom}>{f.nom}</option>
+                  ))}
+                  {fournisseurs.length === 0 && <option value="Fournisseur Inconnu">Fournisseur Inconnu (Saisir manuellement via params)</option>}
+                </select>
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569' }}>Montant Estimé (DZD)</label>
-                <input type="number" className="premium-input" placeholder="Ex: 150000" value={newAchat.montant} onChange={e => setNewAchat({...newAchat, montant: e.target.value})} />
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <button 
+                  onClick={() => { setTypeArticle('monture'); setSelectedProduct(null); setProductSearch(''); }}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '2px solid', borderColor: typeArticle === 'monture' ? 'var(--accent)' : 'var(--border-color)', background: typeArticle === 'monture' ? '#eff6ff' : 'white', cursor: 'pointer', fontWeight: 600, color: typeArticle === 'monture' ? 'var(--accent)' : 'var(--text-secondary)' }}
+                >
+                  Monture
+                </button>
+                <button 
+                  onClick={() => { setTypeArticle('verre'); setSelectedProduct(null); setProductSearch(''); }}
+                  style={{ padding: '0.75rem', borderRadius: '8px', border: '2px solid', borderColor: typeArticle === 'verre' ? 'var(--accent)' : 'var(--border-color)', background: typeArticle === 'verre' ? '#eff6ff' : 'white', cursor: 'pointer', fontWeight: 600, color: typeArticle === 'verre' ? 'var(--accent)' : 'var(--text-secondary)' }}
+                >
+                  Verre
+                </button>
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569' }}>Nombre d'articles</label>
-                <input type="number" className="premium-input" placeholder="Ex: 50" value={newAchat.nbArticles} onChange={e => setNewAchat({...newAchat, nbArticles: e.target.value})} />
+
+              <div ref={searchRef} style={{ position: 'relative' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569' }}>Produit</label>
+                {selectedProduct ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', background: '#f8fafc', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                    <div style={{ fontWeight: 600 }}>{selectedProduct.designation || selectedProduct.modele || selectedProduct.reference}</div>
+                    <button onClick={() => setSelectedProduct(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}><X size={16} /></button>
+                  </div>
+                ) : (
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      type="text" 
+                      className="premium-input" 
+                      placeholder="Rechercher un produit..." 
+                      value={productSearch}
+                      onChange={e => setProductSearch(e.target.value)}
+                      onFocus={() => { if(products.length > 0) setShowProductDropdown(true); }}
+                    />
+                    {isSearching && <Loader2 size={16} className="spin" style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />}
+                    
+                    {showProductDropdown && products.length > 0 && (
+                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid var(--border-color)', borderRadius: '8px', marginTop: '0.25rem', maxHeight: '200px', overflowY: 'auto', zIndex: 10 }}>
+                        {products.map(p => (
+                          <div 
+                            key={p.id}
+                            onClick={() => { setSelectedProduct(p); setShowProductDropdown(false); }}
+                            style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.2s', fontWeight: 500 }}
+                            onMouseOver={e => e.currentTarget.style.background = '#f8fafc'}
+                            onMouseOut={e => e.currentTarget.style.background = 'white'}
+                          >
+                            {p.designation || p.modele || p.reference} <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginLeft: '0.5rem' }}>{p.reference}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569' }}>Prix d'achat Unitaire</label>
+                  <input type="number" className="premium-input" placeholder="DZD" value={newAchat.prixAchat} onChange={e => setNewAchat({...newAchat, prixAchat: e.target.value})} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569' }}>Quantité</label>
+                  <input type="number" className="premium-input" placeholder="Ex: 10" value={newAchat.quantite} onChange={e => setNewAchat({...newAchat, quantite: e.target.value})} />
+                </div>
               </div>
             </div>
 
-            <button onClick={handleAdd} className="btn-primary" style={{ width: '100%', padding: '1rem' }}>Valider la commande</button>
+            <button onClick={handleAdd} disabled={!newAchat.fournisseur || !selectedProduct || !newAchat.prixAchat} className="btn-primary" style={{ width: '100%', padding: '1rem', opacity: (!newAchat.fournisseur || !selectedProduct || !newAchat.prixAchat) ? 0.7 : 1 }}>Valider la commande</button>
           </div>
         </div>
       )}

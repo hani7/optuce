@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Activity, CheckCircle, Smartphone, MapPin, Search, Plus, Filter, ArrowLeft, Users } from 'lucide-react';
+import { User, Activity, CheckCircle, Smartphone, MapPin, Search, Plus, Filter, ArrowLeft, Users, Edit2, Trash2 } from 'lucide-react';
 
 export default function Medical() {
   const [view, setView] = useState<'table' | 'form'>('table');
@@ -17,10 +17,14 @@ export default function Medical() {
       const res = await fetch('http://127.0.0.1:8000/api/patients/');
       if (res.ok) {
         const data = await res.json();
-        setPatients(data);
+        const results = Array.isArray(data) ? data : (data.results || []);
+        setPatients(results);
+      } else {
+        setPatients([]);
       }
     } catch (error) {
       console.error("Erreur de chargement", error);
+      setPatients([]);
     }
   };
 
@@ -68,7 +72,14 @@ export default function Medical() {
           <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.5rem', color: '#0f172a' }}>
             <Users size={28} color="var(--accent)" /> Base de Données Patients
           </h2>
-          <button className="btn-accent" onClick={() => setView('form')}>
+          <button className="btn-accent" onClick={() => {
+            setNomPrenom('');
+            setTelephone('');
+            setAge('');
+            setAdresse('');
+            setProfession('');
+            setView('form');
+          }}>
             <Plus size={20} /> Ajouter Patient
           </button>
         </div>
@@ -105,13 +116,29 @@ export default function Medical() {
                     <span style={{ fontWeight: 600, color: '#334155' }}>{p.telephone || '-'}</span>
                   </td>
                   <td style={tdStyle}>
-                    <span style={badgeGray}>{new Date(p.date_creation).toLocaleDateString('fr-FR')}</span>
+                    <span style={badgeGray}>{p.date_creation ? new Date(p.date_creation).toLocaleDateString('fr-FR') : 'Non renseignée'}</span>
                   </td>
                   <td style={tdStyle}>
                     <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>-</span>
                   </td>
                   <td style={tdStyle}>
-                     <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', boxShadow: 'none' }} onClick={() => setView('form')}>Ouvrir Dossier</button>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', boxShadow: 'none' }} onClick={() => {
+                        setNomPrenom((p.prenom + ' ' + p.nom).trim());
+                        setTelephone(p.telephone || '');
+                        setAdresse(p.adresse || '');
+                        setProfession(p.profession || '');
+                        setView('form');
+                      }}>Ouvrir Dossier</button>
+                      <button onClick={() => {
+                        setNomPrenom((p.prenom + ' ' + p.nom).trim());
+                        setTelephone(p.telephone || '');
+                        setAdresse(p.adresse || '');
+                        setProfession(p.profession || '');
+                        setView('form');
+                      }} title="Modifier" style={{ background: '#f1f5f9', border: 'none', color: '#475569', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', display: 'flex' }}><Edit2 size={16} /></button>
+                      <button onClick={() => { if (window.confirm('Êtes-vous sûr de vouloir supprimer ce patient ?')) setPatients(patients.filter(pat => pat.id !== p.id)); }} title="Supprimer" style={{ background: '#fef2f2', border: 'none', color: '#ef4444', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', display: 'flex' }}><Trash2 size={16} /></button>
+                    </div>
                   </td>
                 </tr>
               )) : (
@@ -127,7 +154,14 @@ export default function Medical() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <button 
-        onClick={() => setView('table')}
+        onClick={() => {
+          setNomPrenom('');
+          setTelephone('');
+          setAge('');
+          setAdresse('');
+          setProfession('');
+          setView('table');
+        }}
         style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: '#64748b', fontWeight: 600, cursor: 'pointer', width: 'fit-content', padding: '0.5rem 1rem', borderRadius: '50px', transition: 'all 0.2s' }}
         onMouseOver={e => e.currentTarget.style.backgroundColor = '#f1f5f9'}
         onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}

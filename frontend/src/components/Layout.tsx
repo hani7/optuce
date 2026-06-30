@@ -1,3 +1,4 @@
+import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { 
   ShoppingCart, 
@@ -17,10 +18,23 @@ import {
   Building,
   DollarSign,
   Tag,
-  Layers
+  Layers,
+  LogOut
 } from 'lucide-react';
 
 export default function Layout() {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const currentDate = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long',
     year: 'numeric',
@@ -58,10 +72,40 @@ export default function Layout() {
           <span style={{ fontSize: '0.85rem', opacity: 0.8, fontWeight: 500 }}>
             {currentDate} • {currentTime}
           </span>
-          <button className="icon-button">
-            <Bell size={20} />
-            <span className="notification-badge">3</span>
-          </button>
+          <div style={{ position: 'relative' }} ref={notifRef}>
+            <button className="icon-button" onClick={() => setShowNotifications(!showNotifications)}>
+              <Bell size={20} />
+              <span className="notification-badge">3</span>
+            </button>
+            
+            {showNotifications && (
+              <div className="premium-card" style={{ position: 'absolute', top: '120%', right: 0, width: '300px', zIndex: 100, padding: 0, overflow: 'hidden', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}>
+                <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9', background: '#f8fafc', fontWeight: 600, color: '#0f172a' }}>
+                  Notifications
+                </div>
+                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} className="hover-item">
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>Stock faible : Monture Ray-Ban</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Il ne reste que 2 unités en stock.</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.5rem' }}>Il y a 10 min</div>
+                  </div>
+                  <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} className="hover-item">
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>Nouvelle commande atelier</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>La commande CMD-2026-045 est prête.</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.5rem' }}>Il y a 1 heure</div>
+                  </div>
+                  <div style={{ padding: '1rem', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} className="hover-item">
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>Rendez-vous client</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>M. Benali est attendu pour la livraison de ses lunettes.</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.5rem' }}>Il y a 2 heures</div>
+                  </div>
+                </div>
+                <div style={{ padding: '0.75rem', textAlign: 'center', background: '#f8fafc', borderTop: '1px solid #f1f5f9', fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent)', cursor: 'pointer' }}>
+                  Voir toutes les notifications
+                </div>
+              </div>
+            )}
+          </div>
           <button className="icon-button">
             <Settings size={20} />
           </button>
@@ -69,6 +113,9 @@ export default function Layout() {
             <div className="user-avatar">
               A
             </div>
+            <button className="icon-button" title="Déconnexion" onClick={() => { localStorage.removeItem('optuce_auth'); window.location.href = '/'; }}>
+              <LogOut size={20} color="#ef4444" />
+            </button>
           </div>
         </div>
       </header>
@@ -89,7 +136,7 @@ export default function Layout() {
             Clients
           </NavLink>
           <div className="nav-dropdown-container">
-            <NavLink to="/stocks" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="#" className="nav-item">
               <Package />
               Stock
             </NavLink>
@@ -116,7 +163,7 @@ export default function Layout() {
             Statistiques
           </NavLink>
           <div className="nav-dropdown-container">
-            <NavLink to="/parametres" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="#" className="nav-item">
               <Settings />
               Paramètres
             </NavLink>

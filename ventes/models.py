@@ -149,3 +149,41 @@ class Encaissement(models.Model):
 
     def __str__(self):
         return f"{self.get_mode_display()} — {self.montant} DA"
+
+class Charge(models.Model):
+    """Suivi des charges / dépenses opérationnelles"""
+    CATEGORIE_CHOICES = [
+        ('Loyer', 'Loyer'),
+        ('Électricité', 'Électricité / Gaz'),
+        ('Eau', 'Eau'),
+        ('Internet', 'Internet / Téléphone'),
+        ('Fourniture', 'Fourniture de bureau'),
+        ('Salaire', 'Salaires'),
+        ('Maintenance', 'Entretien / Maintenance'),
+        ('Autre', 'Autre'),
+    ]
+    TYPE_CHOICES = [
+        ('Fixe', 'Fixe'),
+        ('Variable', 'Variable'),
+    ]
+    STATUT_CHOICES = [
+        ('Payé', 'Payé'),
+        ('En attente', 'En attente'),
+    ]
+
+    date = models.DateField(default=timezone.now)
+    categorie = models.CharField(max_length=50, choices=CATEGORIE_CHOICES, default='Autre')
+    description = models.CharField(max_length=300)
+    montant = models.DecimalField(max_digits=12, decimal_places=2)
+    type_charge = models.CharField(max_length=20, choices=TYPE_CHOICES, default='Variable')
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='Payé')
+
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Charge / Dépense"
+        verbose_name_plural = "Charges / Dépenses"
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.categorie} — {self.montant} DZD ({self.date})"

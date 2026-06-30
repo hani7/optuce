@@ -16,10 +16,13 @@ class LigneVenteSerializer(serializers.ModelSerializer):
     class Meta:
         model = LigneVente
         fields = '__all__'
+        read_only_fields = ['vente']
 
 
 class VenteListSerializer(serializers.ModelSerializer):
     patient_nom = serializers.CharField(source='patient.nom_complet', read_only=True)
+    patient_sexe = serializers.CharField(source='patient.sexe', read_only=True)
+    patient_age = serializers.IntegerField(source='patient.age', read_only=True)
     statut_display = serializers.CharField(source='get_statut_display', read_only=True)
     reste_a_payer = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     est_solde = serializers.BooleanField(read_only=True)
@@ -28,13 +31,14 @@ class VenteListSerializer(serializers.ModelSerializer):
         model = Vente
         fields = [
             'id', 'numero', 'type_document', 'statut', 'statut_display',
-            'patient', 'patient_nom', 'date', 'total_ttc',
+            'patient', 'patient_nom', 'patient_sexe', 'patient_age', 'date', 'total_ttc',
             'total_paye', 'reste_a_payer', 'est_solde'
         ]
 
 
 class VenteDetailSerializer(serializers.ModelSerializer):
     patient_nom = serializers.CharField(source='patient.nom_complet', read_only=True)
+    patient_telephone = serializers.CharField(source='patient.telephone', read_only=True)
     lignes = LigneVenteSerializer(many=True, read_only=True)
     encaissements = EncaissementSerializer(many=True, read_only=True)
     reste_a_payer = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)

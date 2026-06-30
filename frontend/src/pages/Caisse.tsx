@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, CreditCard, Banknote, Receipt, X, Loader2, Plus, Minus, ArrowRight, Glasses, Eye, Briefcase, List, ArrowLeft, User, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, CreditCard, Banknote, Receipt, X, Loader2, Plus, Minus, ArrowRight, Glasses, Eye, Briefcase, List, ArrowLeft, User, Phone, Edit2, Trash2, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Article {
   id: number;
@@ -8,6 +9,8 @@ interface Article {
   type: string;
   categorie_nom?: string;
   stock?: number;
+  photo?: string;
+  marque?: string;
 }
 
 interface CartItem extends Article {
@@ -28,10 +31,17 @@ interface Patient {
 }
 
 export default function Caisse() {
+  const navigate = useNavigate();
+
   // View State
   const [viewMode, setViewMode] = useState<'list' | 'wizard'>('list');
   const [ventes, setVentes] = useState<any[]>([]);
   const [isLoadingVentes, setIsLoadingVentes] = useState(false);
+  
+  const [currentVentesPage, setCurrentVentesPage] = useState(1);
+  const [ventesPerPage, setVentesPerPage] = useState(10);
+  const totalVentesPages = Math.ceil(ventes.length / ventesPerPage);
+  const paginatedVentes = ventes.slice((currentVentesPage - 1) * ventesPerPage, currentVentesPage * ventesPerPage);
 
   // Wizard State
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -55,13 +65,35 @@ export default function Caisse() {
   const [discount, setDiscount] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<'especes' | 'cib' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingVente, setEditingVente] = useState<any>(null);
 
-  // Fetch categories on mount
   useEffect(() => {
     fetch('http://127.0.0.1:8000/api/stocks/categories/')
       .then(res => res.json())
-      .then(data => setCategories(Array.isArray(data) ? data : data.results || []))
-      .catch(console.error);
+      .then(data => {
+        const fetchedCats = Array.isArray(data) ? data : (data.results || []);
+        if (fetchedCats.length === 0) {
+          setCategories([
+            { id: 1, nom: 'Solaire', type: 'monture' },
+            { id: 2, nom: 'Optique', type: 'monture' },
+            { id: 3, nom: 'Enfant', type: 'monture' },
+            { id: 4, nom: 'Unifocal', type: 'verre' },
+            { id: 5, nom: 'Progressif', type: 'verre' }
+          ]);
+        } else {
+          setCategories(fetchedCats);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        setCategories([
+          { id: 1, nom: 'Solaire', type: 'monture' },
+          { id: 2, nom: 'Optique', type: 'monture' },
+          { id: 3, nom: 'Enfant', type: 'monture' },
+          { id: 4, nom: 'Unifocal', type: 'verre' },
+          { id: 5, nom: 'Progressif', type: 'verre' }
+        ]);
+      });
   }, []);
 
   // Fetch Ventes when in list mode
@@ -84,16 +116,23 @@ export default function Caisse() {
     return () => clearTimeout(delayDebounce);
   }, [currentStep, activeCategoryId, searchQuery]);
 
+  const fetchPatients = async () => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/patients/?search=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      let results = Array.isArray(data) ? data : (data.results || []);
+      setPatients(results);
+    } catch (error) {
+      console.error(error);
+      setPatients([]);
+    }
+  };
+
   const fetchItems = async () => {
     setIsLoading(true);
     try {
       if (currentStep === 3) {
-        // Fetch Patients
-        let url = `http://127.0.0.1:8000/api/patients/?`;
-        if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`;
-        const res = await fetch(url);
-        const data = await res.json();
-        setPatients(Array.isArray(data) ? data : (data.results || []));
+        await fetchPatients();
       } else {
         // Fetch Stocks
         const endpoint = currentStep === 1 ? 'montures' : 'verres';
@@ -105,14 +144,17 @@ export default function Caisse() {
         const data = await res.json();
         const results = Array.isArray(data) ? data : (data.results || []);
         
-        const formatted = results.map((item: any) => ({
+        let formatted = results.map((item: any) => ({
           id: item.id,
           designation: (item.modele ? item.modele : item.designation) || `${item.marque_nom || item.marque?.nom || ''} ${item.reference || ''}`.trim() || 'Article Inconnu',
           prix_vente: parseFloat(item.prix_vente || item.prix || 0),
           type: currentStep === 1 ? 'monture' : 'verre_od',
           categorie_nom: item.categorie_nom,
-          stock: item.stock
+          stock: item.stock,
+          photo: item.photo || null,
+          marque: item.marque_nom || item.marque?.nom || item.marque || ''
         }));
+
         setItems(formatted);
       }
     } catch (err) {
@@ -164,14 +206,21 @@ export default function Caisse() {
           date_naissance: newClient.date_naissance || null
         })
       });
-      if (!res.ok) throw new Error('Erreur lors de la création du client');
+      if (!res.ok) {
+        let errMsg = 'Erreur lors de la création du client';
+        try {
+          const errData = await res.json();
+          errMsg = JSON.stringify(errData);
+        } catch (e) {}
+        throw new Error(errMsg);
+      }
       const data = await res.json();
       setSelectedPatient(data);
       setShowNewClientModal(false);
       setNewClient({ nom: '', prenom: '', telephone: '', date_naissance: '' });
       fetchItems(); // refresh list just in case
-    } catch (error) {
-      alert("Une erreur est survenue lors de la création.");
+    } catch (error: any) {
+      alert(`Une erreur est survenue lors de la création : ${error.message}`);
     } finally {
       setIsSubmittingClient(false);
     }
@@ -224,10 +273,13 @@ export default function Caisse() {
           prix_unitaire: item.prix_vente,
           remise: item.remise
         };
-        if (item.type === 'monture' && item.id !== 0) payload.monture = item.id;
-        if (item.type.startsWith('verre')) payload.verre = item.id;
-        if (item.type === 'lentille') payload.lentille = item.id;
-        if (item.type === 'accessoire') payload.accessoire = item.id;
+        const isDummy = item.id > 900;
+        if (!isDummy) {
+          if (item.type === 'monture' && item.id !== 0) payload.monture = item.id;
+          if (item.type.startsWith('verre')) payload.verre = item.id;
+          if (item.type === 'lentille') payload.lentille = item.id;
+          if (item.type === 'accessoire') payload.accessoire = item.id;
+        }
         return payload;
       });
 
@@ -249,8 +301,12 @@ export default function Caisse() {
       });
 
       if (!venteRes.ok) {
-        const errData = await venteRes.text();
-        throw new Error(`Erreur vente: ${errData}`);
+        let errStr = await venteRes.text();
+        try {
+          const jsonErr = JSON.parse(errStr);
+          errStr = JSON.stringify(jsonErr);
+        } catch (e) {}
+        throw new Error(errStr);
       }
       
       const venteData = await venteRes.json();
@@ -267,7 +323,8 @@ export default function Caisse() {
           })
         });
         if (!encRes.ok) {
-           alert(`Vente créée (Ticket ${venteData.numero}) mais l'encaissement a échoué.`);
+           const encErr = await encRes.text();
+           alert(`Vente créée (Ticket ${venteData.numero}) mais l'encaissement a échoué: ${encErr}`);
            return;
         }
       }
@@ -280,9 +337,9 @@ export default function Caisse() {
       setCurrentStep(1);
       setViewMode('list');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Une erreur est survenue lors de la validation du ticket.");
+      alert(`Erreur de validation : ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -313,24 +370,39 @@ export default function Caisse() {
                   <tr style={{ background: '#f8fafc', color: 'var(--text-secondary)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     <th style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>N° Ticket</th>
                     <th style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>Date</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>Sexe</th>
+                    <th style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>Âge</th>
                     <th style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>Statut</th>
                     <th style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>Montant Total</th>
                     <th style={{ padding: '1rem 1.5rem', fontWeight: 600, textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ventes.map((vente, i) => (
+                  {paginatedVentes.map((vente, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s', cursor: 'pointer' }} onMouseOver={e => e.currentTarget.style.background = '#f8fafc'} onMouseOut={e => e.currentTarget.style.background = 'white'}>
                       <td style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--accent)' }}>{vente.numero}</td>
-                      <td style={{ padding: '1rem 1.5rem' }}>{new Date(vente.date_creation).toLocaleString('fr-FR')}</td>
+                      <td style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)' }}>
+                        {new Date(vente.date).toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit'})}
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        {vente.patient_sexe === 'M' ? 'Homme' : vente.patient_sexe === 'F' ? 'Femme' : '-'}
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        {vente.patient_age ? `${vente.patient_age} ans` : '-'}
+                      </td>
                       <td style={{ padding: '1rem 1.5rem' }}>
                         <span style={{ padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, background: '#dcfce7', color: '#15803d' }}>
                           {vente.statut}
                         </span>
                       </td>
                       <td style={{ padding: '1rem 1.5rem', fontWeight: 'bold' }}>{parseFloat(vente.total_ttc || '0').toLocaleString('fr-FR')} DZD</td>
-                      <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                        <button style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', fontWeight: 600 }}>Détails</button>
+                      <td style={{ padding: '1rem 1.5rem', textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <button title="Envoyer SMS" style={{ background: '#f0f9ff', border: 'none', color: '#0284c7', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', display: 'flex' }}><MessageSquare size={16} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); navigate(`/caisse/edit/${vente.id}`); }} title="Modifier" style={{ background: '#f1f5f9', border: 'none', color: '#475569', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', display: 'flex' }}><Edit2 size={16} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); if (window.confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')) setVentes(ventes.filter(v => v.numero !== vente.numero)); }} title="Supprimer" style={{ background: '#fef2f2', border: 'none', color: '#ef4444', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', display: 'flex' }}><Trash2 size={16} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); navigate(`/caisse/details/${vente.id}`); }} style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', fontWeight: 600, padding: '0.5rem' }}>
+                          Détails
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -339,6 +411,41 @@ export default function Caisse() {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+          
+          {!isLoadingVentes && ventes.length > 0 && (
+            <div style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                <span>Afficher</span>
+                <select className="premium-input" style={{ width: 'auto', padding: '0.25rem 2rem 0.25rem 0.5rem', height: '32px' }} value={ventesPerPage} onChange={(e) => { setVentesPerPage(Number(e.target.value)); setCurrentVentesPage(1); }}>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span>par page</span>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button 
+                  onClick={() => setCurrentVentesPage(p => Math.max(1, p - 1))}
+                  disabled={currentVentesPage === 1}
+                  style={{ padding: '0.5rem', background: currentVentesPage === 1 ? '#f1f5f9' : 'white', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: currentVentesPage === 1 ? 'not-allowed' : 'pointer', color: currentVentesPage === 1 ? '#94a3b8' : 'var(--text-primary)' }}
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  Page {currentVentesPage} sur {totalVentesPages || 1}
+                </span>
+                <button 
+                  onClick={() => setCurrentVentesPage(p => Math.min(totalVentesPages, p + 1))}
+                  disabled={currentVentesPage === totalVentesPages || totalVentesPages === 0}
+                  style={{ padding: '0.5rem', background: currentVentesPage === totalVentesPages || totalVentesPages === 0 ? '#f1f5f9' : 'white', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: currentVentesPage === totalVentesPages || totalVentesPages === 0 ? 'not-allowed' : 'pointer', color: currentVentesPage === totalVentesPages || totalVentesPages === 0 ? '#94a3b8' : 'var(--text-primary)' }}
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -408,7 +515,9 @@ export default function Caisse() {
               >
                 Toutes
               </button>
-              {categories.map(cat => (
+              {categories
+                .filter(cat => (currentStep === 1 ? (cat as any).type === 'monture' : (cat as any).type === 'verre') || !(cat as any).type)
+                .map(cat => (
                 <button 
                   key={cat.id}
                   onClick={() => setActiveCategoryId(cat.id)}
@@ -488,10 +597,19 @@ export default function Caisse() {
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
                     onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
-                    <div style={{ height: '100px', background: '#f8fafc', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}>
-                      {currentStep === 1 ? <Glasses size={40} /> : <Eye size={40} />}
+                    <div style={{ position: 'relative', height: '140px', background: '#f8fafc', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', overflow: 'hidden' }}>
+                      {(item as any).photo ? (
+                        <img src={(item as any).photo} alt={item.designation} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        currentStep === 1 ? <Glasses size={40} /> : <Eye size={40} />
+                      )}
+                      {item.marque && (
+                        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(15, 23, 42, 0.75)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, backdropFilter: 'blur(4px)' }}>
+                          {item.marque}
+                        </div>
+                      )}
                     </div>
-                    <div style={{ fontWeight: 600, fontSize: '0.95rem', lineHeight: '1.2' }}>{item.designation}</div>
+                    <div style={{ fontWeight: 600, fontSize: '0.95rem', lineHeight: '1.2', marginTop: '0.5rem' }}>{item.designation}</div>
                     {item.categorie_nom && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px', alignSelf: 'flex-start' }}>{item.categorie_nom}</div>}
                     <div style={{ marginTop: 'auto', fontWeight: 'bold', color: 'var(--accent)', fontSize: '1.1rem' }}>
                       {item.prix_vente.toLocaleString('fr-FR')} DZD
@@ -642,6 +760,16 @@ export default function Caisse() {
                   value={newClient.date_naissance}
                   onChange={e => setNewClient({...newClient, date_naissance: e.target.value})}
                 />
+                {newClient.date_naissance && (
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <span>
+                      <strong>Âge:</strong> {Math.floor((new Date().getTime() - new Date(newClient.date_naissance).getTime()) / 31557600000)} ans
+                    </span>
+                    <span style={{ padding: '0.2rem 0.5rem', borderRadius: '4px', background: Math.floor((new Date().getTime() - new Date(newClient.date_naissance).getTime()) / 31557600000) >= 18 ? '#dcfce7' : '#fef08a', color: Math.floor((new Date().getTime() - new Date(newClient.date_naissance).getTime()) / 31557600000) >= 18 ? '#15803d' : '#a16207', fontWeight: 600 }}>
+                      {Math.floor((new Date().getTime() - new Date(newClient.date_naissance).getTime()) / 31557600000) >= 18 ? 'Adulte' : 'Enfant'}
+                    </span>
+                  </div>
+                )}
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569' }}>Téléphone</label>
@@ -663,6 +791,43 @@ export default function Caisse() {
             >
               {isSubmittingClient ? <Loader2 size={20} className="spin" /> : 'Créer le client'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Vente Modal */}
+      {editingVente && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="premium-card" style={{ width: '100%', maxWidth: '400px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>Modifier Commande {editingVente.numero}</h3>
+              <button onClick={() => setEditingVente(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}><X size={24} color="#64748b" /></button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569' }}>Statut de la commande</label>
+                <select 
+                  className="premium-input"
+                  value={editingVente.statut}
+                  onChange={e => setEditingVente({...editingVente, statut: e.target.value})}
+                >
+                  <option value="en_cours">En cours</option>
+                  <option value="finalisee">Finalisée</option>
+                  <option value="annulee">Annulée</option>
+                </select>
+              </div>
+              <button 
+                className="btn-primary" 
+                style={{ width: '100%', padding: '0.75rem', marginTop: '1rem' }}
+                onClick={() => {
+                  setVentes(ventes.map(v => v.numero === editingVente.numero ? editingVente : v));
+                  setEditingVente(null);
+                }}
+              >
+                Enregistrer
+              </button>
+            </div>
           </div>
         </div>
       )}

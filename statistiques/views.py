@@ -15,7 +15,7 @@ from atelier.models import CommandeFournisseur, Fournisseur
 
 class StatistiquesCAView(APIView):
     """Chiffre d'affaires journalier / mensuel — encaissé vs facturé"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
 
     def get(self, request):
         periode = request.query_params.get('periode', 'mois')  # jour|semaine|mois|annee
@@ -80,7 +80,7 @@ class StatistiquesCAView(APIView):
 
 class StatistiquesTopVentesView(APIView):
     """Top des ventes par marque de monture et par fournisseur de verres"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
 
     def get(self, request):
         nb = int(request.query_params.get('top', 10))
@@ -170,7 +170,7 @@ class StatistiquesTopVentesView(APIView):
 
 class StatistiquesMargesView(APIView):
     """Calcul des marges commerciales nettes (PV - PA)"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
 
     def get(self, request):
         debut = request.query_params.get('debut', date.today().replace(day=1).isoformat())
