@@ -16,7 +16,7 @@ export default function Achats() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('https://api.optuce.baitul.tech/api/parametres/fournisseurs/')
+    fetch('https://back.baitul.tech/api/parametres/fournisseurs/')
       .then(res => res.json())
       .then(data => setFournisseurs(Array.isArray(data) ? data : (data.results || [])))
       .catch(console.error);
@@ -37,7 +37,7 @@ export default function Achats() {
     }
     const delay = setTimeout(() => {
       setIsSearching(true);
-      fetch(`https://api.optuce.baitul.tech/api/stocks/${typeArticle}s/?search=${encodeURIComponent(productSearch)}`)
+      fetch(`https://back.baitul.tech/api/stocks/${typeArticle}s/?search=${encodeURIComponent(productSearch)}`)
         .then(res => res.json())
         .then(data => {
           setProducts(Array.isArray(data) ? data : (data.results || []));

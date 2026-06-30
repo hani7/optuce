@@ -29,7 +29,7 @@ export default function Montures() {
   const fetchMontures = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('https://api.optuce.baitul.tech/api/stocks/montures/');
+      const res = await fetch('https://back.baitul.tech/api/stocks/montures/');
       const data = await res.json();
       setMontures(Array.isArray(data) ? data : (data.results || []));
     } catch (err) {
@@ -66,13 +66,13 @@ export default function Montures() {
 
     try {
       if (editingId) {
-        await fetch(`https://api.optuce.baitul.tech/api/stocks/montures/${editingId}/`, {
+        await fetch(`https://back.baitul.tech/api/stocks/montures/${editingId}/`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       } else {
-        await fetch('https://api.optuce.baitul.tech/api/stocks/montures/', {
+        await fetch('https://back.baitul.tech/api/stocks/montures/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -236,7 +236,7 @@ export default function Montures() {
                       e.stopPropagation(); 
                       if (window.confirm('Êtes-vous sûr de vouloir supprimer cette monture ?')) {
                         try {
-                          await fetch(`https://api.optuce.baitul.tech/api/stocks/montures/${item.id}/`, { method: 'DELETE' });
+                          await fetch(`https://back.baitul.tech/api/stocks/montures/${item.id}/`, { method: 'DELETE' });
                           fetchMontures();
                         } catch(err) {
                           alert('Erreur lors de la suppression');

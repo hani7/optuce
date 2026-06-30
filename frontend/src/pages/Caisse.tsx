@@ -68,7 +68,7 @@ export default function Caisse() {
   const [editingVente, setEditingVente] = useState<any>(null);
 
   useEffect(() => {
-    fetch('https://api.optuce.baitul.tech/api/stocks/categories/')
+    fetch('https://back.baitul.tech/api/stocks/categories/')
       .then(res => res.json())
       .then(data => {
         const fetchedCats = Array.isArray(data) ? data : (data.results || []);
@@ -100,7 +100,7 @@ export default function Caisse() {
   useEffect(() => {
     if (viewMode === 'list') {
       setIsLoadingVentes(true);
-      fetch('https://api.optuce.baitul.tech/api/ventes/')
+      fetch('https://back.baitul.tech/api/ventes/')
         .then(res => res.json())
         .then(data => setVentes(Array.isArray(data) ? data : data.results || []))
         .catch(console.error)
@@ -118,7 +118,7 @@ export default function Caisse() {
 
   const fetchPatients = async () => {
     try {
-      const res = await fetch(`https://api.optuce.baitul.tech/api/patients/?search=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(`https://back.baitul.tech/api/patients/?search=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
       let results = Array.isArray(data) ? data : (data.results || []);
       setPatients(results);
@@ -136,7 +136,7 @@ export default function Caisse() {
       } else {
         // Fetch Stocks
         const endpoint = currentStep === 1 ? 'montures' : 'verres';
-        let url = `https://api.optuce.baitul.tech/api/stocks/${endpoint}/?`;
+        let url = `https://back.baitul.tech/api/stocks/${endpoint}/?`;
         if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`;
         if (activeCategoryId) url += `categorie=${activeCategoryId}&`;
 
@@ -196,7 +196,7 @@ export default function Caisse() {
     }
     setIsSubmittingClient(true);
     try {
-      const res = await fetch('https://api.optuce.baitul.tech/api/patients/', {
+      const res = await fetch('https://back.baitul.tech/api/patients/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -294,7 +294,7 @@ export default function Caisse() {
         ventePayload.patient = selectedPatient.id;
       }
 
-      const venteRes = await fetch('https://api.optuce.baitul.tech/api/ventes/', {
+      const venteRes = await fetch('https://back.baitul.tech/api/ventes/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ventePayload)
@@ -312,7 +312,7 @@ export default function Caisse() {
       const venteData = await venteRes.json();
 
       if (paymentMethod && netAPayer > 0) {
-        const encRes = await fetch('https://api.optuce.baitul.tech/api/ventes/encaissements/', {
+        const encRes = await fetch('https://back.baitul.tech/api/ventes/encaissements/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

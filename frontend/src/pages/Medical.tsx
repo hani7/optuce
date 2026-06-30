@@ -14,7 +14,7 @@ export default function Medical() {
 
   const fetchPatients = async () => {
     try {
-      const res = await fetch('https://api.optuce.baitul.tech/api/patients/');
+      const res = await fetch('https://back.baitul.tech/api/patients/');
       if (res.ok) {
         const data = await res.json();
         const results = Array.isArray(data) ? data : (data.results || []);
@@ -46,7 +46,7 @@ export default function Medical() {
         adresse
       };
 
-      const res = await fetch('https://api.optuce.baitul.tech/api/patients/', {
+      const res = await fetch('https://back.baitul.tech/api/patients/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
