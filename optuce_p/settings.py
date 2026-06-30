@@ -135,6 +135,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://optuce.baitul.tech',
     'http://optuce.baitul.tech',
     'http://api.optuce.baitul.tech',
+    'https://api.optuce.baitul.tech',
 
 ]
 CORS_ALLOW_CREDENTIALS = True
