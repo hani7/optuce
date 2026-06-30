@@ -151,7 +151,7 @@ export default function Caisse() {
           type: currentStep === 1 ? 'monture' : 'verre_od',
           categorie_nom: item.categorie_nom,
           stock: item.stock,
-          photo: item.photo || null,
+          photo: item.image || item.photo || null,
           marque: item.marque_nom || item.marque?.nom || item.marque || ''
         }));
 

@@ -58,48 +58,12 @@ export default function Dashboard() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
       
-      {/* Date Filters */}
-      <div className="premium-card" style={{ padding: '1.25rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a', fontWeight: 600 }}>
-            <Filter size={20} color="var(--accent)" /> Filtrer par :
-          </div>
-          <select 
-            className="premium-input" 
-            style={{ width: 'auto', padding: '0.5rem 2rem 0.5rem 1rem' }}
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            <option value="mois">Ce Mois</option>
-            <option value="annee">Cette Année</option>
-            <option value="periode">Période personnalisée...</option>
-          </select>
-        </div>
-
-        {filterType === 'periode' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Du</span>
-              <input type="date" className="premium-input" style={{ padding: '0.5rem 1rem' }} value={dateDebut} onChange={e => setDateDebut(e.target.value)} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Au</span>
-              <input type="date" className="premium-input" style={{ padding: '0.5rem 1rem' }} value={dateFin} onChange={e => setDateFin(e.target.value)} />
-            </div>
-          </div>
-        )}
-
-        <button onClick={fetchData} className="btn-primary" style={{ padding: '0.5rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Calendar size={18} /> Actualiser
-        </button>
-      </div>
-      
       {/* Top Widgets */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
-        <Widget title="Chiffre d'Affaires du Jour" value={formatMoney(statsCA.kpis.ca_aujourd_hui)} icon={<DollarSign color="#10b981" size={32} />} bgColor="#ecfdf5" />
-        <Widget title={filterType === 'annee' ? "CA Annuel" : "CA Mensuel"} value={formatMoney(filterType === 'annee' ? statsCA.kpis.ca_annee : statsCA.kpis.ca_mois)} icon={<TrendingUp color="#3b82f6" size={32} />} bgColor="#eff6ff" />
-        <Widget title="Marge Nette Globale" value={`${statsMarges.taux_marge_global}%`} icon={<BarChart2 color="#8b5cf6" size={32} />} bgColor="#f5f3ff" />
-        <Widget title="Ventes Finalisées (Mois)" value={statsCA.kpis.nb_ventes_mois.toString()} icon={<Package color="#f59e0b" size={32} />} bgColor="#fffbeb" />
+        <Widget title="Chiffre d'Affaires du Jour" value={formatMoney(statsCA.kpis.ca_aujourd_hui)} icon={<DollarSign color="white" size={32} />} bgColor="#ecfdf5" />
+        <Widget title={filterType === 'annee' ? "CA Annuel" : "CA Mensuel"} value={formatMoney(filterType === 'annee' ? statsCA.kpis.ca_annee : statsCA.kpis.ca_mois)} icon={<TrendingUp color="white" size={32} />} bgColor="#eff6ff" />
+        <Widget title="Marge Nette Globale" value={`${statsMarges.taux_marge_global}%`} icon={<BarChart2 color="white" size={32} />} bgColor="#f5f3ff" />
+        <Widget title="Ventes Finalisées (Mois)" value={statsCA.kpis.nb_ventes_mois.toString()} icon={<Package color="white" size={32} />} bgColor="#fffbeb" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
@@ -223,13 +187,14 @@ export default function Dashboard() {
 }
 
 function Widget({ title, value, icon, bgColor }: { title: string, value: string, icon: React.ReactNode, bgColor: string }) {
+  // Les couleurs demandées par l'utilisateur (fond: #f1f5f9, icone: #1eb6e7)
   return (
-    <div className="premium-card hover-item" style={{ borderLeft: `4px solid ${bgColor !== '#fffbeb' ? bgColor.replace('f', 'b').replace('e','a') : '#f59e0b'}`, display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
-      <div style={{ background: bgColor, padding: '1rem', borderRadius: '12px' }}>
+    <div className="premium-card hover-item" style={{ background: '#f1f5f9', borderLeft: '4px solid #1eb6e7', display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
+      <div style={{ background: '#1eb6e7', padding: '1rem', borderRadius: '12px' }}>
         {icon}
       </div>
       <div>
-        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{title}</div>
+        <div style={{ color: '#475569', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{title}</div>
         <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{value}</div>
       </div>
     </div>

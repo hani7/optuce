@@ -119,32 +119,41 @@ export default function Montures() {
       </div>
 
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-        <div className="premium-card hover-item" style={{ borderLeft: '4px solid #3b82f6', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ background: '#eff6ff', padding: '1rem', borderRadius: '12px' }}>
-            <Package size={28} color="#3b82f6" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+        <div className="premium-card hover-item" style={{ background: '#f1f5f9', borderLeft: '4px solid #1eb6e7', display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
+          <div style={{ background: '#1eb6e7', padding: '1rem', borderRadius: '12px' }}>
+            <Package size={28} color="white" />
           </div>
           <div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600 }}>Total Montures en Stock</div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a' }}>{montures.length}</div>
+            <div style={{ color: '#475569', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Montures en Stock</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{montures.length}</div>
           </div>
         </div>
-        <div className="premium-card hover-item" style={{ borderLeft: '4px solid #ef4444', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ background: '#fee2e2', padding: '1rem', borderRadius: '12px' }}>
-            <AlertCircle size={28} color="#ef4444" />
+        <div className="premium-card hover-item" style={{ background: '#f1f5f9', borderLeft: '4px solid #1eb6e7', display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
+          <div style={{ background: '#1eb6e7', padding: '1rem', borderRadius: '12px' }}>
+            <AlertCircle size={28} color="white" />
           </div>
           <div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600 }}>Rupture de stock</div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a' }}>{montures.filter(m => m.stock === 0).length} <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>modèles</span></div>
+            <div style={{ color: '#475569', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Rupture de stock</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{montures.filter(m => m.stock === 0).length} <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 500 }}>modèles</span></div>
           </div>
         </div>
-        <div className="premium-card hover-item" style={{ borderLeft: '4px solid #10b981', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div style={{ background: '#ecfdf5', padding: '1rem', borderRadius: '12px' }}>
-            <TrendingUp size={28} color="#10b981" />
+        <div className="premium-card hover-item" style={{ background: '#f1f5f9', borderLeft: '4px solid #1eb6e7', display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
+          <div style={{ background: '#1eb6e7', padding: '1rem', borderRadius: '12px' }}>
+            <TrendingUp size={28} color="white" />
           </div>
           <div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600 }}>Valeur du stock (Est.)</div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a' }}>{(montures.reduce((acc, m) => acc + (parseFloat(m.prix_vente) || 0) * (parseInt(m.stock) || 0), 0)).toLocaleString('fr-FR')} <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>DZD</span></div>
+            <div style={{ color: '#475569', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Valeur du stock</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{(montures.reduce((acc, m) => acc + (parseFloat(m.prix_vente) || 0) * (parseInt(m.stock) || 0), 0)).toLocaleString('fr-FR')} <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 500 }}>DZD</span></div>
+          </div>
+        </div>
+        <div className="premium-card hover-item" style={{ background: '#f1f5f9', borderLeft: '4px solid #1eb6e7', display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
+          <div style={{ background: '#1eb6e7', padding: '1rem', borderRadius: '12px' }}>
+            <Glasses size={28} color="white" />
+          </div>
+          <div>
+            <div style={{ color: '#475569', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Marques Différentes</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a' }}>{new Set(montures.map(m => m.marque_nom || m.marque)).size} <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 500 }}>marques</span></div>
           </div>
         </div>
       </div>
