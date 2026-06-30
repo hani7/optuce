@@ -137,6 +137,10 @@ CORS_ALLOWED_ORIGINS = [
     'http://optuce.baitul.tech',
     'http://back.baitul.tech',
     'https://back.baitul.tech',
-
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://optuce.baitul.tech',
+    'https://back.baitul.tech',
+]
