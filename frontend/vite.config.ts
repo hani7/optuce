@@ -9,7 +9,8 @@ export default defineConfig({
       allow: ['..', 'C:/Users/pc/.gemini/antigravity/brain']
     },
     proxy: {
-      '/api': 'http://localhost:8000'
+      '/api': 'http://localhost:8000',
+      '/media': 'http://localhost:8000'
     }
   }
 })
