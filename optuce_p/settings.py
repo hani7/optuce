@@ -130,12 +130,13 @@ SIMPLE_JWT = {
 # ─── CORS ────────────────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'http://localhost:5174',
     'http://127.0.0.1:5173',
     'http://localhost:3000',
     'https://optuce.baitul.tech',
     'http://optuce.baitul.tech',
-    'http://api.optuce.baitul.tech',
-    'https://api.optuce.baitul.tech',
+    'http://back.baitul.tech',
+    'https://back.baitul.tech',
 
 ]
 CORS_ALLOW_CREDENTIALS = True

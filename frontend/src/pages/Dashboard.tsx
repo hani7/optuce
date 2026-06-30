@@ -19,9 +19,9 @@ export default function Dashboard() {
     }
 
     Promise.all([
-      fetch(`https://back.baitul.tech/api/statistiques/ca/${params}`).then(res => res.json()),
-      fetch(`https://back.baitul.tech/api/statistiques/marges/${params}`).then(res => res.json()),
-      fetch(`https://back.baitul.tech/api/statistiques/top-ventes/${params}`).then(res => res.json())
+      fetch(`${import.meta.env.VITE_API_URL}/api/statistiques/ca/${params}`).then(res => res.json()),
+      fetch(`${import.meta.env.VITE_API_URL}/api/statistiques/marges/${params}`).then(res => res.json()),
+      fetch(`${import.meta.env.VITE_API_URL}/api/statistiques/top-ventes/${params}`).then(res => res.json())
     ])
     .then(([caData, margesData, topData]) => {
       setStatsCA(caData);

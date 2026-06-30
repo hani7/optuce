@@ -9,7 +9,7 @@ export default function DetailsCommande() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`https://back.baitul.tech/api/ventes/${id}/`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/ventes/${id}/`)
       .then(res => res.json())
       .then(data => setVente(data))
       .catch(console.error)

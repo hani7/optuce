@@ -68,7 +68,7 @@ export default function Caisse() {
   const [editingVente, setEditingVente] = useState<any>(null);
 
   useEffect(() => {
-    fetch('https://back.baitul.tech/api/stocks/categories/')
+    fetch(`${import.meta.env.VITE_API_URL}/api/stocks/categories/`)
       .then(res => res.json())
       .then(data => {
         const fetchedCats = Array.isArray(data) ? data : (data.results || []);
@@ -100,7 +100,7 @@ export default function Caisse() {
   useEffect(() => {
     if (viewMode === 'list') {
       setIsLoadingVentes(true);
-      fetch('https://back.baitul.tech/api/ventes/')
+      fetch(`${import.meta.env.VITE_API_URL}/api/ventes/`)
         .then(res => res.json())
         .then(data => setVentes(Array.isArray(data) ? data : data.results || []))
         .catch(console.error)
@@ -118,7 +118,7 @@ export default function Caisse() {
 
   const fetchPatients = async () => {
     try {
-      const res = await fetch(`https://back.baitul.tech/api/patients/?search=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/?search=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
       let results = Array.isArray(data) ? data : (data.results || []);
       setPatients(results);
@@ -136,7 +136,7 @@ export default function Caisse() {
       } else {
         // Fetch Stocks
         const endpoint = currentStep === 1 ? 'montures' : 'verres';
-        let url = `https://back.baitul.tech/api/stocks/${endpoint}/?`;
+        let url = `${import.meta.env.VITE_API_URL}/api/stocks/${endpoint}/?`;
         if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`;
         if (activeCategoryId) url += `categorie=${activeCategoryId}&`;
 
@@ -196,7 +196,7 @@ export default function Caisse() {
     }
     setIsSubmittingClient(true);
     try {
-      const res = await fetch('https://back.baitul.tech/api/patients/', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -294,7 +294,7 @@ export default function Caisse() {
         ventePayload.patient = selectedPatient.id;
       }
 
-      const venteRes = await fetch('https://back.baitul.tech/api/ventes/', {
+      const venteRes = await fetch(`${import.meta.env.VITE_API_URL}/api/ventes/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ventePayload)
@@ -312,7 +312,7 @@ export default function Caisse() {
       const venteData = await venteRes.json();
 
       if (paymentMethod && netAPayer > 0) {
-        const encRes = await fetch('https://back.baitul.tech/api/ventes/encaissements/', {
+        const encRes = await fetch(`${import.meta.env.VITE_API_URL}/api/ventes/encaissements/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -462,10 +462,10 @@ export default function Caisse() {
         >
           <ArrowLeft size={18} /> Retour à la liste
         </button>
-        <div style={{ display: 'flex', gap: '2rem', flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', gap: '2rem', flex: 1, overflow: 'hidden' }} className="wizard-layout">
         
         {/* Left side: Wizard (80%) */}
-        <div className="premium-card" style={{ flex: 4, display: 'flex', flexDirection: 'column', gap: '1.5rem', overflow: 'hidden' }}>
+        <div className="premium-card wizard-left" style={{ flex: 4, display: 'flex', flexDirection: 'column', gap: '1.5rem', overflow: 'hidden' }}>
           
           {/* Wizard Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
@@ -625,7 +625,7 @@ export default function Caisse() {
         </div>
 
         {/* Right side: Cart & Checkout (20%) */}
-        <div className="premium-card" style={{ flex: 1.5, display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden', minWidth: '350px' }}>
+        <div className="premium-card wizard-right" style={{ flex: 1.5, display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden', minWidth: '350px' }}>
           <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderBottom: '2px dashed var(--border-color)' }}>
             <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '1.25rem' }}>
               <span>Ticket Actuel</span>
@@ -708,11 +708,17 @@ export default function Caisse() {
               </button>
             </div>
             
+            {!selectedPatient && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '8px', padding: '0.6rem 0.9rem', marginBottom: '0.75rem', fontSize: '0.85rem', color: '#c2410c', fontWeight: 600 }}>
+                <User size={14} />
+                <span>Sélectionnez un client à l'étape <button onClick={() => goToStep(3)} style={{ background: 'none', border: 'none', color: '#ea580c', fontWeight: 800, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>3</button> pour continuer</span>
+              </div>
+            )}
             <button 
               onClick={validerTicket}
-              disabled={isSubmitting || cartItems.length === 0}
+              disabled={isSubmitting || cartItems.length === 0 || !selectedPatient}
               className="btn-primary" 
-              style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', borderRadius: '8px', opacity: (isSubmitting || cartItems.length === 0) ? 0.7 : 1 }}
+              style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', borderRadius: '8px', opacity: (isSubmitting || cartItems.length === 0 || !selectedPatient) ? 0.5 : 1, cursor: (isSubmitting || cartItems.length === 0 || !selectedPatient) ? 'not-allowed' : 'pointer' }}
             >
               {isSubmitting ? <Loader2 size={20} className="spin" /> : <Receipt size={20} />}
               {isSubmitting ? 'Validation...' : 'Valider Ticket'}

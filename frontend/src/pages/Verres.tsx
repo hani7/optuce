@@ -16,7 +16,7 @@ export default function Verres() {
   const fetchVerres = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('https://back.baitul.tech/api/stocks/verres/');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stocks/verres/`);
       const data = await res.json();
       setVerres(Array.isArray(data) ? data : (data.results || []));
     } catch (err) {
@@ -190,7 +190,7 @@ export default function Verres() {
                       e.stopPropagation(); 
                       if (window.confirm('Êtes-vous sûr de vouloir supprimer ce verre ?')) {
                         try {
-                          await fetch(`https://back.baitul.tech/api/stocks/verres/${item.id}/`, { method: 'DELETE' });
+                          await fetch(`${import.meta.env.VITE_API_URL}/api/stocks/verres/${item.id}/`, { method: 'DELETE' });
                           fetchVerres();
                         } catch(err) {
                           alert('Erreur lors de la suppression');
